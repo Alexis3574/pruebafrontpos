@@ -3,8 +3,6 @@
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderView from '@/components/HeaderView';
-import Footer from '@/components/Footer';
 
 const ventasDummy = [
   {
@@ -72,9 +70,8 @@ export default function Ventas() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <h1 className="text-3xl font-bold mb-6">Registro de Ventas</h1>
 
           {/* Registro Rápido */}
@@ -135,9 +132,9 @@ export default function Ventas() {
 
           {/* Tabla de Ventas */}
           <div className="bg-white p-4 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-4">Historial de Ventas</h2>
+            <h2 className="text-xl font-semibold mb-4 text-black">Historial de Ventas</h2>
             <table className="w-full table-auto">
-              <thead className="bg-indigo-600 text-white">
+              <thead className="bg-indigo-600 text-white text-black">
                 <tr>
                   <th className="px-4 py-2 text-left">Fecha</th>
                   <th className="px-4 py-2 text-left">Total</th>
@@ -147,7 +144,7 @@ export default function Ventas() {
               </thead>
               <tbody>
                 {ventas.map((venta) => (
-                  <tr key={venta.id} className="hover:bg-gray-50">
+                  <tr key={venta.id} className="hover:bg-gray-50 text-black">
                     <td className="px-4 py-2">{venta.fecha}</td>
                     <td className="px-4 py-2">${venta.total.toFixed(2)}</td>
                     <td className="px-4 py-2">{venta.metodo}</td>
@@ -169,7 +166,7 @@ export default function Ventas() {
                 ))}
                 {ventas.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="px-4 py-4 text-center text-gray-500">
+                    <td colSpan="4" className="px-4 py-4 text-center text-black">
                       No se han registrado ventas.
                     </td>
                   </tr>
@@ -179,7 +176,6 @@ export default function Ventas() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );

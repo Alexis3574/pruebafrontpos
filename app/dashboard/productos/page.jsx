@@ -3,8 +3,6 @@
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderView from '../../components/HeaderView';
-import Footer from '../../components/Footer';
 
 const productosDummy = [
   { id: 1, nombre: 'Leche', tipo: 'Animal', compra: 10, venta: 15, stock: 3, caducidad: '2025-05-01' },
@@ -39,9 +37,8 @@ export default function Productos() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold">Gestión de Productos</h1>
             <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -110,7 +107,6 @@ export default function Productos() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );

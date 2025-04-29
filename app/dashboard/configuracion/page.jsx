@@ -3,8 +3,6 @@
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderView from '@/components/HeaderView';
-import Footer from '@/components/Footer';
 
 export default function Configuracion() {
   const router = useRouter();
@@ -40,13 +38,12 @@ export default function Configuracion() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <h1 className="text-3xl font-bold mb-6">Configuración del Sistema</h1>
 
           {/* Datos del negocio */}
-          <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <div className="bg-white rounded-xl shadow p-6 mb-6 text-black">
             <h2 className="text-xl font-semibold mb-4">Datos del negocio</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input
@@ -164,7 +161,6 @@ export default function Configuracion() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );

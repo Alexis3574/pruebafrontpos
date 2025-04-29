@@ -3,8 +3,6 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderView from '@/components/HeaderView';
-import Footer from '@/components/Footer';
 
 export default function Proveedores() {
   const router = useRouter();
@@ -16,13 +14,26 @@ export default function Proveedores() {
   const [modoEditar, setModoEditar] = useState(false);
   const [indiceEdicion, setIndiceEdicion] = useState(null);
 
+  // Verificación de sesión
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('authenticated');
-    if (isAuthenticated !== 'true') router.push('/login');
-  }, []);
+    if (isAuthenticated !== 'true') {
+      router.push('/login');
+    } else {
+      const storedProveedores = JSON.parse(localStorage.getItem('proveedores')) || [];
+      setProveedores(storedProveedores);
+    }
+  }, [router]);
+
+  // Guardar en localStorage cada vez que cambia la lista
+  useEffect(() => {
+    localStorage.setItem('proveedores', JSON.stringify(proveedores));
+  }, [proveedores]);
 
   const agregarProveedor = () => {
-    if (!nombre || !contacto || !productos) return alert('Todos los campos son obligatorios');
+    if (!nombre || !contacto || !productos) {
+      return alert('Todos los campos son obligatorios');
+    }
 
     const nuevoProveedor = { nombre, contacto, productos };
 
@@ -57,9 +68,7 @@ export default function Proveedores() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
-
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <h1 className="text-3xl font-bold mb-6">Gestión de Proveedores</h1>
 
           <div className="bg-white p-4 rounded-xl shadow mb-6">
@@ -109,22 +118,23 @@ export default function Proveedores() {
                 </tr>
               </thead>
               <tbody>
-                {proveedores.map((prov, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-2">{prov.nombre}</td>
-                    <td className="px-4 py-2">{prov.contacto}</td>
-                    <td className="px-4 py-2">{prov.productos}</td>
-                    <td className="px-4 py-2">
-                      <button
-                        onClick={() => editarProveedor(index)}
-                        className="text-indigo-600 hover:underline"
-                      >
-                        Editar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {proveedores.length === 0 && (
+                {proveedores.length > 0 ? (
+                  proveedores.map((prov, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-2">{prov.nombre}</td>
+                      <td className="px-4 py-2">{prov.contacto}</td>
+                      <td className="px-4 py-2">{prov.productos}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          onClick={() => editarProveedor(index)}
+                          className="text-indigo-600 hover:underline"
+                        >
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
                     <td colSpan="4" className="px-4 py-4 text-center text-gray-500">
                       No hay proveedores registrados.
@@ -135,10 +145,7 @@ export default function Proveedores() {
             </table>
           </div>
         </main>
-
-        <Footer />
       </div>
     </>
   );
 }
-yar

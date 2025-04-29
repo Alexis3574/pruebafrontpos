@@ -47,9 +47,8 @@ export default function Inventario() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <h1 className="text-3xl font-bold mb-6">Control de Inventario</h1>
 
           {/* Ajuste manual */}
@@ -139,7 +138,6 @@ export default function Inventario() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );

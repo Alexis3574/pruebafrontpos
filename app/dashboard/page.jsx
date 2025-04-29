@@ -3,8 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Head from 'next/head';
-import HeaderView from '../../components/HeaderView';
-import Footer from '../../components/Footer';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -30,7 +28,6 @@ export default function Dashboard() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
         <main className="flex-grow p-6 bg-gray-100">
           <div className="flex justify-between items-center mb-6">
@@ -46,7 +43,6 @@ export default function Dashboard() {
           <p>Desde aquí podrás gestionar ventas, productos, inventario y más.</p>
         </main>
 
-        <Footer />
       </div>
     </>
   );

@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell
 } from 'recharts';
-import HeaderView from '@/components/HeaderView';
-import Footer from '@/components/Footer';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
@@ -67,9 +65,8 @@ export default function Reportes() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Reportes</h1>
 
@@ -147,7 +144,6 @@ export default function Reportes() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );

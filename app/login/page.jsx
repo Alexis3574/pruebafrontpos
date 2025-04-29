@@ -87,32 +87,32 @@ export default function Login() {
       <div className="flex flex-col min-h-screen">
         <HeaderView />
 
-        <main className="flex flex-col items-center justify-center flex-grow px-6 py-12 bg-gray-50">
+        <main className="flex flex-col items-center justify-center flex-grow px-6 py-12 bg-gray-50 text-black">
           <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
             {view === 'login' && (
               <>
-                <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center text-black">Iniciar Sesión</h2>
 
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                    <label className="block text-sm font-medium text-black">Correo electrónico</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+                    <label className="block text-sm font-medium text-black">Contraseña</label>
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
                     />
                   </div>
 
@@ -146,39 +146,39 @@ export default function Login() {
 
             {view === 'register' && (
               <>
-                <h2 className="text-2xl font-bold mb-6 text-center">Crear Cuenta</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center text-black">Crear Cuenta</h2>
 
                 <form onSubmit={handleRegister} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                    <label className="block text-sm font-medium text-black">Correo electrónico</label>
                     <input
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+                    <label className="block text-sm font-medium text-black">Contraseña</label>
                     <input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
+                    <label className="block text-sm font-medium text-black">Confirmar Contraseña</label>
                     <input
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
                     />
                   </div>
 

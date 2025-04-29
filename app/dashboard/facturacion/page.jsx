@@ -3,8 +3,6 @@
 import Head from 'next/head';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import HeaderView from '@/components/HeaderView';
-import Footer from '@/components/Footer';
 
 const facturas = [
   {
@@ -42,9 +40,8 @@ export default function Facturacion() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Facturación</h1>
             <button
@@ -96,7 +93,6 @@ export default function Facturacion() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );

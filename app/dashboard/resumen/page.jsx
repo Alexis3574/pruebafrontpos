@@ -1,8 +1,6 @@
 'use client';
 
 import Head from 'next/head';
-import HeaderView from '../../components/HeaderView';
-import Footer from '../../components/Footer';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -40,10 +38,9 @@ export default function Resumen() {
       </Head>
 
       <div className="flex flex-col min-h-screen">
-        <HeaderView />
 
-        <main className="flex-grow px-6 py-8 bg-gray-100">
-          <h1 className="text-3xl font-bold mb-6">Resumen General</h1>
+        <main className="flex-grow px-6 py-8 bg-gray-100 text-black">
+          <h1 className="text-3xl font-bold mb-6 text-black">Resumen General</h1>
 
           {/* Tarjetas */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -95,7 +92,6 @@ export default function Resumen() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </>
   );
