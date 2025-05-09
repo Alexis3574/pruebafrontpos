@@ -19,7 +19,7 @@ export default function Sidebar() {
 
   return (
     <div className="h-full p-6 bg-white border-r border-gray-200">
-      <h1 className="text-2xl font-bold text-blue-600 mb-8">SAE-ITIZ</h1>
+      <h1 className="text-2xl font-bold text-blue-600 mb-8">ITIZ-SAE</h1>
       <nav className="space-y-2">
         {navItems.map((item) => (
           <Link key={item.path} href={item.path}>

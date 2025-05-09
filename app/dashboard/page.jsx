@@ -23,7 +23,7 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>Panel de Administración | SAE-ITIZ</title>
+        <title>Panel de Administración | POS-ITIZ</title>
         <meta name="description" content="Administra tu negocio desde aquí." />
       </Head>
 

@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       String   @default("usuario")
+  creadoEn  DateTime @default(now())
+
+  ventas    Venta[]
+  reportes  Reporte[]
+}
+
+model Producto {
+  id             Int      @id @default(autoincrement())
+  nombre         String
+  tipo           String
+  precioCompra   Float
+  precioVenta    Float
+  stock          Int
+  stockMinimo    Int      @default(5)
+  fechaCaducidad DateTime
+  creadoEn       DateTime @default(now())
+
+  detallesVenta  DetalleVenta[]
+  movimientos    MovimientoInventario[]
+}
+
+model Venta {
+  id         Int       @id @default(autoincrement())
+  usuarioId  Int
+  fecha      DateTime  @default(now())
+  total      Float
+  metodoPago String
+
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id])
+  detalles   DetalleVenta[]
+  factura    Factura?
+}
+
+model DetalleVenta {
+  id          Int      @id @default(autoincrement())
+  ventaId     Int
+  productoId  Int
+  cantidad    Int
+  precioUnitario Float
+
+  venta       Venta    @relation(fields: [ventaId], references: [id])
+  producto    Producto @relation(fields: [productoId], references: [id])
+}
+
+model MovimientoInventario {
+  id         Int      @id @default(autoincrement())
+  productoId Int
+  tipo       String   // entrada, salida, ajuste
+  cantidad   Int
+  observacion String?
+  fecha      DateTime @default(now())
+
+  producto   Producto @relation(fields: [productoId], references: [id])
+}
+
+model Proveedor {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  contacto  String
+  productos String
+}
+
+model Reporte {
+  id          Int      @id @default(autoincrement())
+  tipo        String
+  generadoPor Int
+  fecha       DateTime @default(now())
+  datos       Json
+
+  usuario     Usuario  @relation(fields: [generadoPor], references: [id])
+}
+
+model Factura {
+  id       Int     @id @default(autoincrement())
+  ventaId  Int     @unique
+  folio    String
+  total    Float
+  fecha    DateTime @default(now())
+
+  venta    Venta   @relation(fields: [ventaId], references: [id])
+}
+
+model Configuracion {
+  id    Int    @id @default(autoincrement())
+  clave String @unique
+  valor String
+}
+

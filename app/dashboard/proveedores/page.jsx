@@ -3,6 +3,11 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import useFetch from './useFetch';
+
+export function useProveedores() {
+  return useFetch('/api/proveedores');
+}
 
 export default function Proveedores() {
   const router = useRouter();

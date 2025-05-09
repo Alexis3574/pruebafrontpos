@@ -3,6 +3,12 @@
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import useFetch from './useFetch';
+
+export function useProductos() {
+  return useFetch('/api/productos');
+}
+
 
 const productosDummy = [
   { id: 1, nombre: 'Leche', tipo: 'Animal', compra: 10, venta: 15, stock: 3, caducidad: '2025-05-01' },
