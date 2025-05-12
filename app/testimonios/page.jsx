@@ -31,11 +31,11 @@ export default function Testimonios() {
         <meta name="description" content="Conoce lo que opinan nuestros usuarios." />
       </Head>
 
-      <div className="flex flex-col min-h-screen">
+      <div className=" bg-white flex flex-col min-h-screen">
         <HeaderView />
 
         <main className="flex flex-col items-center px-6 py-10 flex-grow">
-          <h2 className="text-2xl font-bold mb-6 text-center">Lo que dicen nuestros clientes</h2>
+          <h2 className=" text-black text-2xl font-bold mb-6 text-center">Lo que dicen nuestros clientes</h2>
 
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full">
             {testimonios.map((t, index) => (

@@ -15,8 +15,8 @@ export default function SobreNosotros() {
       <div className="flex flex-col min-h-screen">
         <HeaderView />
 
-        <main className="flex flex-col items-center px-6 py-10 gap-10 flex-grow">
-          <h2 className="text-2xl font-bold text-center text-white">Sobre Nosotros</h2>
+        <main className=" bg-white flex flex-col items-center px-6 py-10 gap-10 flex-grow">
+          <h2 className="text-2xl font-bold text-center text-black">Sobre Nosotros</h2>
 
           <div className="flex flex-col md:flex-row gap-6 max-w-6xl w-full">
             <div className="bg-gray-100 w-full md:w-1/2 h-64 flex items-center justify-center rounded-lg">

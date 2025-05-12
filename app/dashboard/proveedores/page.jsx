@@ -3,7 +3,7 @@
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import useFetch from './useFetch';
+import useFetch from '../../hooks/usefetch';
 
 export function useProveedores() {
   return useFetch('/api/proveedores');

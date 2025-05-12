@@ -15,9 +15,9 @@ export default function Contacto() {
       <div className="flex flex-col min-h-screen">
         <HeaderView />
 
-        <main className="flex flex-col items-center px-6 py-10 flex-grow">
-          <h2 className="text-2xl font-bold mb-4 text-center">Contáctanos</h2>
-          <p className="text-gray-600 mb-10 text-center max-w-xl">
+        <main className=" bg-white flex flex-col items-center px-6 py-10 flex-grow">
+          <h2 className=" text-black text-2xl font-bold mb-4 text-center">Contáctanos</h2>
+          <p className="text-black mb-10 text-center max-w-xl">
             ¿Tienes preguntas o deseas saber más sobre nuestros servicios? Completa el siguiente formulario y nos pondremos en contacto contigo.
           </p>
 

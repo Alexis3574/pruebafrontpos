@@ -1,11 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
+
 }
 
 datasource db {
@@ -13,97 +8,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Usuario {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  email     String   @unique
-  password  String
-  rol       String   @default("usuario")
-  creadoEn  DateTime @default(now())
-
-  ventas    Venta[]
-  reportes  Reporte[]
+model configuracion {
+  id    Int     @id @default(autoincrement())
+  clave String? @unique @db.VarChar(100)
+  valor String?
 }
 
-model Producto {
-  id             Int      @id @default(autoincrement())
-  nombre         String
-  tipo           String
-  precioCompra   Float
-  precioVenta    Float
-  stock          Int
-  stockMinimo    Int      @default(5)
-  fechaCaducidad DateTime
-  creadoEn       DateTime @default(now())
-
-  detallesVenta  DetalleVenta[]
-  movimientos    MovimientoInventario[]
+model detalle_ventas {
+  id              Int        @id @default(autoincrement())
+  venta_id        Int?
+  producto_id     Int?
+  cantidad        Int?
+  precio_unitario Decimal?   @db.Decimal
+  productos       productos? @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ventas          ventas?    @relation(fields: [venta_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model Venta {
-  id         Int       @id @default(autoincrement())
-  usuarioId  Int
-  fecha      DateTime  @default(now())
-  total      Float
-  metodoPago String
-
-  usuario    Usuario   @relation(fields: [usuarioId], references: [id])
-  detalles   DetalleVenta[]
-  factura    Factura?
+model facturas {
+  id       Int       @id @default(autoincrement())
+  venta_id Int?
+  folio    String?   @db.VarChar(50)
+  total    Decimal?  @db.Decimal
+  fecha    DateTime? @default(now()) @db.Timestamp(6)
+  ventas   ventas?   @relation(fields: [venta_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model DetalleVenta {
-  id          Int      @id @default(autoincrement())
-  ventaId     Int
-  productoId  Int
-  cantidad    Int
-  precioUnitario Float
-
-  venta       Venta    @relation(fields: [ventaId], references: [id])
-  producto    Producto @relation(fields: [productoId], references: [id])
-}
-
-model MovimientoInventario {
-  id         Int      @id @default(autoincrement())
-  productoId Int
-  tipo       String   // entrada, salida, ajuste
-  cantidad   Int
+model movimientos_inventario {
+  id          Int        @id @default(autoincrement())
+  producto_id Int?
+  tipo        String?    @db.VarChar(50)
+  cantidad    Int?
   observacion String?
-  fecha      DateTime @default(now())
-
-  producto   Producto @relation(fields: [productoId], references: [id])
+  fecha       DateTime?  @default(now()) @db.Timestamp(6)
+  productos   productos? @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model Proveedor {
-  id        Int      @id @default(autoincrement())
-  nombre    String
-  contacto  String
-  productos String
+model productos {
+  id                     Int                      @id @default(autoincrement())
+  nombre                 String?                  @db.VarChar(100)
+  tipo                   String?                  @db.VarChar(50)
+  precio_compra          Decimal?                 @db.Decimal
+  precio_venta           Decimal?                 @db.Decimal
+  stock                  Int?
+  stock_minimo           Int?                     @default(5)
+  fecha_caducidad        DateTime?                @db.Date
+  creado_en              DateTime?                @default(now()) @db.Timestamp(6)
+  detalle_ventas         detalle_ventas[]
+  movimientos_inventario movimientos_inventario[]
 }
 
-model Reporte {
-  id          Int      @id @default(autoincrement())
-  tipo        String
-  generadoPor Int
-  fecha       DateTime @default(now())
-  datos       Json
-
-  usuario     Usuario  @relation(fields: [generadoPor], references: [id])
+model proveedores {
+  id        Int     @id @default(autoincrement())
+  nombre    String? @db.VarChar(100)
+  contacto  String? @db.VarChar(100)
+  productos String?
 }
 
-model Factura {
-  id       Int     @id @default(autoincrement())
-  ventaId  Int     @unique
-  folio    String
-  total    Float
-  fecha    DateTime @default(now())
-
-  venta    Venta   @relation(fields: [ventaId], references: [id])
+model reportes {
+  id           Int       @id @default(autoincrement())
+  tipo         String?   @db.VarChar(100)
+  generado_por Int?
+  fecha        DateTime? @default(now()) @db.Timestamp(6)
+  datos        Json?
+  usuarios     usuarios? @relation(fields: [generado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model Configuracion {
-  id    Int    @id @default(autoincrement())
-  clave String @unique
-  valor String
+model usuarios {
+  id        Int        @id @default(autoincrement())
+  nombre    String?    @db.VarChar(100)
+  email     String     @unique @db.VarChar(100)
+  password  String     @db.VarChar(255)
+  rol       String?    @default("usuario") @db.VarChar(50)
+  creado_en DateTime?  @default(now()) @db.Timestamp(6)
+  reportes  reportes[]
+  ventas    ventas[]
 }
 
+model ventas {
+  id             Int              @id @default(autoincrement())
+  usuario_id     Int?
+  fecha          DateTime?        @default(now()) @db.Timestamp(6)
+  total          Decimal?         @db.Decimal
+  metodo_pago    String?          @db.VarChar(50)
+  detalle_ventas detalle_ventas[]
+  facturas       facturas[]
+  usuarios       usuarios?        @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
