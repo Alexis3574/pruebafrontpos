@@ -2,7 +2,6 @@
 
 import Head from 'next/head';
 import HeaderView from '../../components/HeaderView';
-import Footer from '../../components/Footer';
 import TestimonialCard from '../../components/cards/TestimonialCard';
 
 const testimonios = [
@@ -42,9 +41,9 @@ export default function Testimonios() {
               <TestimonialCard key={index} nombre={t.nombre} comentario={t.comentario} ubicacion={t.ubicacion} />
             ))}
           </div>
+         
         </main>
 
-        <Footer />
       </div>
     </>
   );

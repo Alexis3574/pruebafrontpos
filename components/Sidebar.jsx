@@ -2,39 +2,72 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 const navItems = [
   { name: 'Resumen', path: '/dashboard/resumen' },
   { name: 'Ventas', path: '/dashboard/ventas' },
   { name: 'Productos', path: '/dashboard/productos' },
-  { name: 'Inventario', path: '/dashboard/inventario' },
-  { name: 'Proveedores', path: '/dashboard/proveedores' },
-  { name: 'Reportes', path: '/dashboard/reportes' },
-  { name: 'Facturación', path: '/dashboard/facturacion' },
-  { name: 'Configuración', path: '/dashboard/configuracion' },
+  { name: 'Inventario', path: '/dashboard/inventario', adminOnly: true },
+  { name: 'Proveedores', path: '/dashboard/proveedores', adminOnly: true },
+  { name: 'Reportes', path: '/dashboard/reportes', adminOnly: true },
+  { name: 'Facturación', path: '/dashboard/facturacion', adminOnly: true },
+  { name: 'Gestión de Usuarios', path: '/dashboard/configuracion', adminOnly: true },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const rol = session?.user?.rol;
+
+  const visibleItems = navItems.filter(
+    (item) => !item.adminOnly || rol === 'administrador'
+  );
 
   return (
-    <div className="h-full p-6 bg-white border-r border-gray-200">
-      <h1 className="text-2xl font-bold text-blue-600 mb-8">ITIZ-SAE</h1>
-      <nav className="space-y-2">
-        {navItems.map((item) => (
-          <Link key={item.path} href={item.path}>
-            <span
-              className={`block px-4 py-2 rounded-lg cursor-pointer font-medium ${
-                pathname === item.path
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {item.name}
-            </span>
-          </Link>
-        ))}
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out
+      bg-gradient-to-b from-emerald-100 to-emerald-200 backdrop-blur-sm
+      md:static ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+    >
+      <div className="flex items-center justify-between md:hidden px-4 py-3">
+        <h1 className="text-lg font-bold text-emerald-700">GI-ITIZ</h1>
+        <button
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Cerrar sidebar"
+          className="rounded-lg p-1.5 text-emerald-700/80 hover:bg-emerald-100/80"
+        >
+          <X size={22} />
+        </button>
+      </div>
+
+      <div className="hidden md:block px-6 py-8">
+        <h1 className="text-2xl font-extrabold tracking-tight text-emerald-700">
+          GI-ITIZ
+        </h1>
+      </div>
+
+      <nav className="flex flex-col h-[calc(100%-5rem)] justify-start px-6">
+        <ul className="flex flex-col gap-6">
+          {visibleItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <li key={item.path}>
+                <Link href={item.path}>
+                  <span
+                    className={`block cursor-pointer text-base font-semibold tracking-wide transition
+                    ${isActive ? 'text-emerald-800' : 'text-zinc-800'}
+                    hover:text-emerald-600`}
+                  >
+                    {item.name}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
-    </div>
+    </aside>
   );
 }

@@ -1,32 +1,43 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 
-// GET: obtener productos
 export async function GET() {
-const productos = await prisma.productos.findMany();
-  return NextResponse.json(productos);
+  try {
+    const productos = await prisma.productos.findMany({
+      orderBy: { creadoen: 'desc' },
+    });
+
+    return NextResponse.json(productos);
+  } catch (error) {
+    console.error('❌ Error en GET /api/productos:', error);
+    return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 });
+  }
 }
 
-// POST: crear un producto
 export async function POST(request) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
 
-  let fechaCaducidad = null;
-  if (body.fecha_caducidad && !isNaN(Date.parse(body.fecha_caducidad))) {
-    fechaCaducidad = new Date(body.fecha_caducidad);
+    const fechaCad = body.fechacaducidad
+      ? new Date(body.fechacaducidad)
+      : null;
+
+    const nuevoProducto = await prisma.productos.create({
+      data: {
+        nombre: body.nombre,
+        tipo: body.tipo,
+        preciocompra: body.preciocompra ?? 0,
+        precioventa: body.precioventa,
+        stock: body.stock,
+        stockminimo: body.stockminimo ?? 5,
+        unidadMedida: body.unidadMedida,
+        fechacaducidad: fechaCad,
+      },
+    });
+
+    return NextResponse.json(nuevoProducto);
+  } catch (error) {
+    console.error('❌ Error en POST /api/productos:', error);
+    return NextResponse.json({ error: 'Error al crear producto' }, { status: 500 });
   }
-
-  const nuevoProducto = await prisma.productos.create({
-    data: {
-      nombre: body.nombre,
-      tipo: body.tipo,
-      precio_compra: body.precio_compra,
-      precio_venta: body.precio_venta,
-      stock: body.stock,
-      stock_minimo: body.stock_minimo ?? 5,
-      fecha_caducidad: fechaCaducidad,
-    },
-  });
-
-  return NextResponse.json(nuevoProducto);
 }

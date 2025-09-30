@@ -1,24 +1,34 @@
+import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-// Rutas protegidas
-const protectedPaths = ['/dashboard'];
+export default withAuth(
+  async function middleware(req) {
+    const { token } = req.nextauth;
 
-export function middleware(request) {
-  const { pathname } = request.nextUrl;
-  const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
+    if (!token) return;
 
-  if (isProtected) {
-    const authenticated = request.cookies.get('authenticated')?.value;
+    const url = req.nextUrl.pathname;
 
-    if (authenticated !== 'true') {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      return NextResponse.redirect(url);
+    const adminOnlyPaths = [
+      '/dashboard/configuracion',
+      '/dashboard/facturacion',
+      '/dashboard/proveedores',
+      '/dashboard/inventario',
+      '/dashboard/reportes',
+    ];
+
+    if (token.rol === 'usuario' && adminOnlyPaths.some((path) => url.startsWith(path))) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
     }
-  }
 
-  return NextResponse.next();
-}
+    return NextResponse.next();
+  },
+  {
+    pages: {
+      signIn: '/login',
+    },
+  }
+);
 
 export const config = {
   matcher: ['/dashboard/:path*'],

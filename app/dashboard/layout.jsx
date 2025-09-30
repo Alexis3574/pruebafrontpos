@@ -1,39 +1,54 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
+import { CarritoProvider } from '../context/CarritoContext'; // 👈 importa el provider
 
 export default function DashboardLayout({ children }) {
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem('authenticated');
-    if (isAuthenticated !== 'true') {
-      router.push('/login');
-    }
-  }, [router]);
+  if (status === 'unauthenticated') {
+    router.push('/login');
+    return null;
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-600">
+        Cargando sesión...
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-lg">
-        <Sidebar />
-      </aside>
+    <CarritoProvider>
+      <div className="flex min-h-screen transition-all duration-300">
+        <aside
+          className={`
+            bg-gradient-to-b from-emerald-100 to-emerald-200 
+            shadow-lg transition-all duration-300 
+            ${sidebarOpen ? 'w-64' : 'w-0 overflow-hidden'}`}
+        >
+          <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <header className="bg-white shadow px-6 py-4">
-          <Topbar />
-        </header>
+        <div className="flex-1 flex flex-col">
+          <header className="bg-emerald-200 shadow px-6 py-4">
+            <Topbar
+              user={session?.user}
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+            />
+          </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          {children}
-        </main>
+          <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+        </div>
       </div>
-    </div>
+    </CarritoProvider>
   );
 }

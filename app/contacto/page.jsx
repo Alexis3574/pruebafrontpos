@@ -2,7 +2,6 @@
 
 import Head from 'next/head';
 import HeaderView from '@/components/HeaderView';
-import Footer from '@/components/Footer';
 
 export default function Contacto() {
   return (
@@ -21,7 +20,7 @@ export default function Contacto() {
             ¿Tienes preguntas o deseas saber más sobre nuestros servicios? Completa el siguiente formulario y nos pondremos en contacto contigo.
           </p>
 
-          <form className="bg-white shadow-lg p-6 rounded-xl w-full max-w-xl space-y-6">
+          <form className="bg-emerald-100 shadow-lg p-6 rounded-xl w-full max-w-xl space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
@@ -51,14 +50,13 @@ export default function Contacto() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+              className="w-full bg-emerald-400 text-black py-2 rounded-lg font-semibold hover:bg-emerald-300 transition"
             >
               Enviar mensaje
             </button>
           </form>
         </main>
 
-        <Footer />
       </div>
     </>
   );

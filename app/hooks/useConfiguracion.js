@@ -1,42 +1,72 @@
-// app/hooks/useConfiguracion.js
 'use client';
-
 import { useState, useEffect } from 'react';
 
 export function useConfiguracion() {
-  const [configuracion, setConfiguracion] = useState(null);
+  const [configuracion, setConfiguracion] = useState([]);
 
-  const obtenerConfiguracion = async () => {
+  const obtener = async () => {
     try {
       const res = await fetch('/api/configuracion');
+      if (!res.ok) throw new Error('Error al obtener configuraciones');
       const data = await res.json();
       setConfiguracion(data);
     } catch (error) {
-      console.error('Error al obtener la configuración:', error);
+      console.error('❌ Error al obtener configuraciones:', error);
     }
   };
 
-  const guardarConfiguracion = async (configActualizada) => {
+  const crear = async (item) => {
     try {
       const res = await fetch('/api/configuracion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item),
+      });
+      if (!res.ok) throw new Error('Error al crear configuración');
+      await res.json();
+      obtener();
+    } catch (error) {
+      console.error('❌ Error al crear configuración:', error);
+    }
+  };
+
+  const actualizar = async (id, item) => {
+    try {
+      const res = await fetch(`/api/configuracion/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(configActualizada),
+        body: JSON.stringify(item),
       });
-      const data = await res.json();
-      setConfiguracion(data);
+      if (!res.ok) throw new Error('Error al actualizar configuración');
+      await res.json();
+      obtener();
     } catch (error) {
-      console.error('Error al guardar configuración:', error);
+      console.error('❌ Error al actualizar configuración:', error);
+    }
+  };
+
+  const eliminar = async (id) => {
+    try {
+      const res = await fetch(`/api/configuracion/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Error al eliminar configuración');
+      await res.json();
+      obtener();
+    } catch (error) {
+      console.error('❌ Error al eliminar configuración:', error);
     }
   };
 
   useEffect(() => {
-    obtenerConfiguracion();
+    obtener();
   }, []);
 
   return {
     configuracion,
-    obtenerConfiguracion,
-    guardarConfiguracion,
+    obtener,
+    crear,
+    actualizar,
+    eliminar,
   };
 }

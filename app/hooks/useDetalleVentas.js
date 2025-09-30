@@ -3,63 +3,86 @@ import { useState, useEffect } from 'react';
 
 export function useDetalleVentas() {
   const [detalles, setDetalles] = useState([]);
+  const [error, setError] = useState(null);
 
   const obtener = async () => {
     try {
-      const res = await fetch('/api/ventas');
+      const res = await fetch('/api/detalleVentas');
       const text = await res.text();
       const data = text ? JSON.parse(text) : [];
       setDetalles(data);
     } catch (error) {
-      console.error('Error al obtener detalle_ventas:', error);
+      console.error('❌ Error al obtener detalle_ventas:', error);
+      setError('No se pudieron obtener los detalles de venta');
     }
   };
 
   const crear = async (detalle) => {
-      console.log("🧾 Detalle que se enviará:", detalle); 
     try {
-      const res = await fetch('/api/ventas', {
+      const res = await fetch('/api/detalleVentas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(detalle),
       });
 
-      if (!res.ok) throw new Error('Error al crear detalle_venta');
-      await res.json(); // opcional si quieres usar la respuesta
-      obtener();
+      const text = await res.text();
+
+      if (!res.ok) {
+        const data = text ? JSON.parse(text) : {};
+        throw new Error(data.error || 'Error al crear detalle_venta');
+      }
+
+      const data = text ? JSON.parse(text) : null;
+
+      await obtener();
+
+      return data;
     } catch (error) {
-      console.error('Error al crear ventas:', error);
+      console.error('❌ Error al crear detalle_venta:', error);
+      setError(error.message);
+      return null;
     }
   };
 
- const actualizar = async (id, datos) => {
-  try {
-    const res = await fetch(`/api/detalle_ventas/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos),
-    });
+  const actualizar = async (id, datos) => {
+    try {
+      const res = await fetch(`/api/detalleVentas/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+      });
 
-    if (!res.ok) throw new Error('Error al actualizar detalle_venta');
-    await res.json();
-    obtener();
-  } catch (error) {
-    console.error('Error al actualizar detalle_venta:', error);
-  }
-};
+      const text = await res.text();
 
+      if (!res.ok) {
+        const data = text ? JSON.parse(text) : {};
+        throw new Error(data.error || 'Error al actualizar detalle_venta');
+      }
+
+      await obtener();
+    } catch (error) {
+      console.error('❌ Error al actualizar detalle_venta:', error);
+      setError(error.message);
+    }
+  };
 
   const eliminar = async (id) => {
     try {
-      const res = await fetch(`/api/ventas/${id}`, {
+      const res = await fetch(`/api/detalleVentas/${id}`, {
         method: 'DELETE',
       });
 
-      if (!res.ok) throw new Error('Error al eliminar detalle_venta');
-      await res.json();
-      obtener();
+      const text = await res.text();
+
+      if (!res.ok) {
+        const data = text ? JSON.parse(text) : {};
+        throw new Error(data.error || 'Error al eliminar detalle_venta');
+      }
+
+      await obtener();
     } catch (error) {
-      console.error('Error al eliminar venta:', error);
+      console.error('❌ Error al eliminar detalle_venta:', error);
+      setError(error.message);
     }
   };
 
@@ -73,5 +96,6 @@ export function useDetalleVentas() {
     crear,
     actualizar,
     eliminar,
+    error,
   };
 }

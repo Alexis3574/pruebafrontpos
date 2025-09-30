@@ -1,89 +1,57 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function Form({ configInicial, onGuardar }) {
-  const [form, setForm] = useState({
-    nombreNegocio: '',
-    direccion: '',
-    moneda: '',
-    stockMinimo: '',
-    notificaciones: false,
-  });
+export default function Form({ configuracion, onSave }) {
+  const [formState, setFormState] = useState({});
 
   useEffect(() => {
-    if (configInicial) setForm(configInicial);
-  }, [configInicial]);
+    const initialState = {
+      nombre_negocio: '',
+      rfc_negocio: '',
+      direccion_negocio: '',
+      telefono_negocio: '',
+      impuesto_iva: '',
+      moneda: '',
+      mostrar_stock_bajo: '',
+      stock_minimo_default: '',
+      caducidad_activa: '',
+      tipo_factura_default: '',
+    };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
+    configuracion.forEach(item => {
+      if (item.clave in initialState) {
+        initialState[item.clave] = item.valor;
+      }
+    });
+
+    setFormState(initialState);
+  }, [configuracion]);
+
+  const handleChange = (clave, valor) => {
+    setFormState(prev => ({ ...prev, [clave]: valor }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onGuardar(form);
+    Object.entries(formState).forEach(([clave, valor]) => {
+      onSave(clave, valor);
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow w-full max-w-xl space-y-4">
-      <div>
-        <label className="block font-medium">Nombre del Negocio</label>
-        <input
-          name="nombreNegocio"
-          type="text"
-          className="w-full border px-3 py-2 rounded"
-          value={form.nombreNegocio}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div>
-        <label className="block font-medium">Dirección</label>
-        <input
-          name="direccion"
-          type="text"
-          className="w-full border px-3 py-2 rounded"
-          value={form.direccion}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div>
-        <label className="block font-medium">Moneda</label>
-        <input
-          name="moneda"
-          type="text"
-          className="w-full border px-3 py-2 rounded"
-          value={form.moneda}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div>
-        <label className="block font-medium">Stock Mínimo (alerta)</label>
-        <input
-          name="stockMinimo"
-          type="number"
-          className="w-full border px-3 py-2 rounded"
-          value={form.stockMinimo}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          name="notificaciones"
-          type="checkbox"
-          checked={form.notificaciones}
-          onChange={handleChange}
-        />
-        <label>Activar notificaciones por correo</label>
-      </div>
-
-      <button
-        type="submit"
-        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-      >
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded shadow text-black">
+      {Object.entries(formState).map(([clave, valor]) => (
+        <div key={clave}>
+          <label className="block text-sm font-medium text-gray-700 capitalize mb-1">{clave.replaceAll('_', ' ')}</label>
+          <input
+            type="text"
+            className="w-full border px-3 py-2 rounded"
+            value={valor}
+            onChange={(e) => handleChange(clave, e.target.value)}
+          />
+        </div>
+      ))}
+      <button type="submit" className="col-span-full bg-green-600 text-white py-2 rounded hover:bg-green-600">
         Guardar Configuración
       </button>
     </form>

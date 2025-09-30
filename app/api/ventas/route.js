@@ -1,68 +1,49 @@
-// app/api/detalle_ventas/route.js
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 
-// GET - obtener todos
 export async function GET() {
   try {
-    const data = await prisma.detalle_ventas.findMany();
-    return NextResponse.json(data);
+    const ventas = await prisma.ventas.findMany({
+      include: {
+        detalleventas: {
+          include: {
+            productos: true,
+          },
+        },
+        facturas: true,
+        usuarios: true,
+      },
+      orderBy: { fecha: 'desc' },
+    });
+
+    return NextResponse.json(ventas);
   } catch (error) {
-    console.error(error);
-    return new NextResponse('Error al obtener detalle_ventas', { status: 500 });
+    console.error('❌ Error en GET /api/ventas:', error);
+    return NextResponse.json(
+      { message: 'Error al obtener las ventas', detail: error.message },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log('📝 Body recibido:', body);
 
-    const { venta_id, producto_id, cantidad, precio_unitario } = body;
-
-    // Validaciones básicas
-    if (
-      !venta_id ||
-      !producto_id ||
-      typeof cantidad !== 'number' ||
-      typeof precio_unitario !== 'number'
-    ) {
-      return NextResponse.json(
-        { message: 'Faltan o son inválidos los campos requeridos' },
-        { status: 400 }
-      );
-    }
-
-    // Validar existencia de la venta
-    const ventaExiste = await prisma.ventas.findUnique({ where: { id: venta_id } });
-    if (!ventaExiste) {
-      return NextResponse.json(
-        { message: `No existe la venta con ID ${venta_id}` },
-        { status: 400 }
-      );
-    }
-
-    // Validar existencia del producto
-    const productoExiste = await prisma.productos.findUnique({ where: { id: producto_id } });
-    if (!productoExiste) {
-      return NextResponse.json(
-        { message: `No existe el producto con ID ${producto_id}` },
-        { status: 400 }
-      );
-    }
-
-    // Crear el detalle_venta
-    const nuevo = await prisma.detalle_ventas.create({
-      data: body,
+    const nuevaVenta = await prisma.ventas.create({
+      data: {
+        total: body.total ?? undefined,
+        metodopago: body.metodopago ?? undefined,
+        fecha: body.fecha ? new Date(body.fecha) : undefined,
+      },
     });
 
-    return NextResponse.json(nuevo);
+    return NextResponse.json(nuevaVenta);
   } catch (error) {
-    console.error('❌ Error al crear detalle_venta:', error);
+    console.error('❌ Error en POST /api/ventas:', error);
     return NextResponse.json(
-      { message: 'Error al crear detalle_venta', details: error.message },
-      { status: 400 }
+      { message: 'Error al crear la venta', detail: error.message },
+      { status: 500 }
     );
   }
 }
-

@@ -1,247 +1,147 @@
 'use client';
 
-import Head from 'next/head';
-import HeaderView from '../../components/HeaderView';
-import Footer from '../../components/Footer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Login() {
-  const [view, setView] = useState('login'); // login | register | forgot
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+export default function LoginPage() {
   const router = useRouter();
+  const [usuario, setUsuario] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
 
-  // Simulación de obtener usuarios de localStorage
-  const getUsers = () => {
-    if (typeof window !== 'undefined') {
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      return users;
+  useEffect(() => {
+    const seen = localStorage.getItem('welcome_seen');
+    if (!seen) {
+      setShowWelcome(true);
     }
-    return [];
-  };
+  }, []);
 
-  const saveUser = (user) => {
-    const users = getUsers();
-    users.push(user);
-    localStorage.setItem('users', JSON.stringify(users));
-  };
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const users = getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
+    setError(null);
 
-    if (user) {
-      localStorage.setItem('authenticated', 'true');
-      document.cookie = "authenticated=true; path=/;";
+    const res = await signIn('credentials', {
+      redirect: false,
+      usuario,
+      password,
+    });
+
+    if (res?.ok) {
       router.push('/dashboard');
     } else {
-      alert('Correo o contraseña incorrectos.');
+      setError('Usuario o contraseña incorrectos');
     }
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-
-    if (newPassword !== confirmPassword) {
-      alert('Las contraseñas no coinciden.');
-      return;
-    }
-
-    const users = getUsers();
-    const existingUser = users.find(u => u.email === newEmail);
-
-    if (existingUser) {
-      alert('Ya existe una cuenta con este correo.');
-      return;
-    }
-
-    saveUser({ email: newEmail, password: newPassword });
-    alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
-    setView('login');
-  };
-
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    const users = getUsers();
-    const user = users.find(u => u.email === email);
-
-    if (user) {
-      alert(`Hemos enviado un enlace de recuperación al correo: ${email}`);
-    } else {
-      alert('Correo no registrado.');
-    }
+  const closeWelcome = () => {
+    setShowWelcome(false);
+    localStorage.setItem('welcome_seen', 'true');
   };
 
   return (
-    <>
-      <Head>
-        <title>Iniciar Sesión | SAE-ITIZ</title>
-        <meta name="description" content="Accede a tu cuenta para gestionar tu negocio." />
-      </Head>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-100 via-white to-emerald-200 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 p-8 shadow-xl"
+      >
+        <h2 className="text-center text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
+          Iniciar Sesión
+        </h2>
 
-      <div className="flex flex-col min-h-screen">
-        <HeaderView />
+        {error && (
+          <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
+            {error}
+          </p>
+        )}
 
-        <main className="flex flex-col items-center justify-center flex-grow px-6 py-12 bg-gray-50 text-black">
-          <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-            {view === 'login' && (
-              <>
-                <h2 className="text-2xl font-bold mb-6 text-center text-black">Iniciar Sesión</h2>
-
-                <form onSubmit={handleLogin} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-black">Correo electrónico</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black">Contraseña</label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-                  >
-                    Ingresar
-                  </button>
-
-                  <div className="text-center mt-4">
-                    <button
-                      type="button"
-                      onClick={() => setView('forgot')}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </button>
-                    <br />
-                    <button
-                      type="button"
-                      onClick={() => setView('register')}
-                      className="text-sm text-gray-600 hover:underline mt-2"
-                    >
-                      ¿No tienes cuenta? Regístrate
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-
-            {view === 'register' && (
-              <>
-                <h2 className="text-2xl font-bold mb-6 text-center text-black">Crear Cuenta</h2>
-
-                <form onSubmit={handleRegister} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-black">Correo electrónico</label>
-                    <input
-                      type="email"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black">Contraseña</label>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-black">Confirmar Contraseña</label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-                  >
-                    Registrarse
-                  </button>
-
-                  <div className="text-center mt-4">
-                    <button
-                      type="button"
-                      onClick={() => setView('login')}
-                      className="text-sm text-gray-600 hover:underline"
-                    >
-                      Ya tengo cuenta
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-
-            {view === 'forgot' && (
-              <>
-                <h2 className="text-2xl font-bold mb-6 text-center">Recuperar Contraseña</h2>
-
-                <form onSubmit={handleForgotPassword} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="mt-1 w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition"
-                  >
-                    Enviar recuperación
-                  </button>
-
-                  <div className="text-center mt-4">
-                    <button
-                      type="button"
-                      onClick={() => setView('login')}
-                      className="text-sm text-gray-600 hover:underline"
-                    >
-                      Volver a Iniciar Sesión
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300">
+              Usuario
+            </label>
+            <input
+              type="text"
+              placeholder="Ingresa tu usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              required
+            />
           </div>
-        </main>
 
-        <Footer />
-      </div>
-    </>
+          <div>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              placeholder="Ingresa tu contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-2 text-sm shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              required
+            />
+          </div>
+
+          <motion.button
+            type="submit"
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            className="w-full rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white shadow-md transition hover:bg-emerald-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+          >
+            Ingresar
+          </motion.button>
+        </form>
+
+        {/* {/* <div className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          ¿No tienes cuenta?{' '}
+          <a
+            href="/register"
+            className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+          >
+            Regístrate
+          </a> 
+        </div> */}
+      </motion.div>
+
+      
+      <AnimatePresence>
+        {showWelcome && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="max-w-md rounded-2xl bg-white dark:bg-zinc-900 p-8 shadow-2xl"
+            >
+              <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                ¡Bienvenido a GI-ITIZ!
+              </h2>
+              <p className="mt-2 text-zinc-600 dark:text-zinc-300">
+                Esta aplicación te ayudará a gestionar inventario, ventas y
+                facturas de forma moderna y eficiente, Ingresa tu correo y contraseña.
+              </p>
+              <button
+                onClick={closeWelcome}
+                className="mt-6 w-full rounded-xl bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"
+              >
+                ¡Entendido!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
