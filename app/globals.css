@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+body.grayscale {
+  filter: grayscale(100%);
+}
+
+
+body.contrast {
+  background: #000 !important;
+  color: #fff !important;
+  filter: contrast(150%) brightness(120%);
+}

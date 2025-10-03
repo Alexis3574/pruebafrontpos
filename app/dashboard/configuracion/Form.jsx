@@ -1,58 +1,88 @@
 'use client';
-import { useState, useEffect } from 'react';
 
-export default function Form({ configuracion, onSave }) {
-  const [formState, setFormState] = useState({});
+import { useState } from 'react';
 
-  useEffect(() => {
-    const initialState = {
-      nombre_negocio: '',
-      rfc_negocio: '',
-      direccion_negocio: '',
-      telefono_negocio: '',
-      impuesto_iva: '',
-      moneda: '',
-      mostrar_stock_bajo: '',
-      stock_minimo_default: '',
-      caducidad_activa: '',
-      tipo_factura_default: '',
-    };
+export default function ConfiguracionForm({ onSave }) {
+  const [config, setConfig] = useState({
+    modoGrises: localStorage.getItem('modoGrises') === 'true' || false,
+    modoContraste: localStorage.getItem('modoContraste') === 'true' || false,
+  });
 
-    configuracion.forEach(item => {
-      if (item.clave in initialState) {
-        initialState[item.clave] = item.valor;
-      }
-    });
+  const handleToggleGrises = () => {
+    const nuevoEstado = !config.modoGrises;
+    setConfig((prev) => ({ ...prev, modoGrises: nuevoEstado }));
 
-    setFormState(initialState);
-  }, [configuracion]);
+    // Guardar preferencia
+    localStorage.setItem('modoGrises', nuevoEstado);
 
-  const handleChange = (clave, valor) => {
-    setFormState(prev => ({ ...prev, [clave]: valor }));
+    // Notificar al layout
+    window.dispatchEvent(
+      new CustomEvent('modoGrisesChange', { detail: nuevoEstado })
+    );
   };
 
-  const handleSubmit = (e) => {
+  const handleToggleContraste = () => {
+    const nuevoEstado = !config.modoContraste;
+    setConfig((prev) => ({ ...prev, modoContraste: nuevoEstado }));
+
+    // Guardar preferencia
+    localStorage.setItem('modoContraste', nuevoEstado);
+
+    // Notificar al layout
+    window.dispatchEvent(
+      new CustomEvent('modoContrasteChange', { detail: nuevoEstado })
+    );
+  };
+
+  const handleSave = (e) => {
     e.preventDefault();
-    Object.entries(formState).forEach(([clave, valor]) => {
-      onSave(clave, valor);
-    });
+    onSave(config);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded shadow text-black">
-      {Object.entries(formState).map(([clave, valor]) => (
-        <div key={clave}>
-          <label className="block text-sm font-medium text-gray-700 capitalize mb-1">{clave.replaceAll('_', ' ')}</label>
-          <input
-            type="text"
-            className="w-full border px-3 py-2 rounded"
-            value={valor}
-            onChange={(e) => handleChange(clave, e.target.value)}
-          />
-        </div>
-      ))}
-      <button type="submit" className="col-span-full bg-green-600 text-white py-2 rounded hover:bg-green-600">
-        Guardar Configuración
+    <form onSubmit={handleSave} className="space-y-6 p-4">
+      {/* Opción para escala de grises */}
+      <div>
+        <label className="block mb-2 font-semibold">
+          Escala de grises global
+        </label>
+        <button
+          type="button"
+          onClick={handleToggleGrises}
+          className={`px-4 py-2 rounded ${
+            config.modoGrises
+              ? 'bg-green-600 text-white'
+              : 'bg-gray-500 text-white'
+          }`}
+        >
+          {config.modoGrises ? 'Activado' : 'Desactivado'}
+        </button>
+      </div>
+
+      {/* Opción para contraste */}
+      <div>
+        <label className="block mb-2 font-semibold">
+          Modo alto contraste
+        </label>
+        <button
+          type="button"
+          onClick={handleToggleContraste}
+          className={`px-4 py-2 rounded ${
+            config.modoContraste
+              ? 'bg-yellow-600 text-black'
+              : 'bg-gray-500 text-white'
+          }`}
+        >
+          {config.modoContraste ? 'Activado' : 'Desactivado'}
+        </button>
+      </div>
+
+      {/* Botón Guardar */}
+      <button
+        type="submit"
+        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+      >
+        Guardar configuración
       </button>
     </form>
   );
