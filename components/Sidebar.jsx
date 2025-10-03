@@ -13,7 +13,7 @@ const navItems = [
   { name: 'Proveedores', path: '/dashboard/proveedores', adminOnly: true },
   { name: 'Reportes', path: '/dashboard/reportes', adminOnly: true },
   { name: 'Facturación', path: '/dashboard/facturacion', adminOnly: true },
-  { name: 'Gestión de Usuarios', path: '/dashboard/configuracion', adminOnly: true },
+  { name: 'Configuración', path: '/dashboard/configuracion', adminOnly: true },
 ];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {

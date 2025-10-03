@@ -43,5 +43,8 @@
   "main": "index.js",
   "repository": "https://github.com/Alexis3574/pruebafrontpos.git",
   "author": "Alexis3574 <alexismejia3753@outlook.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
 }
