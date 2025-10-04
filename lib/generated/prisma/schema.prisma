@@ -27,7 +27,7 @@ model usuarios {
 
 model configuracion {
   id    Int     @id @default(autoincrement())
-  clave String? @db.VarChar(100)
+  clave String  @unique @db.VarChar(100)
   valor String?
 }
 

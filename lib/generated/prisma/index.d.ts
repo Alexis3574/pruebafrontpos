@@ -3340,7 +3340,7 @@ export namespace Prisma {
 
   export type ConfiguracionGroupByOutputType = {
     id: number
-    clave: string | null
+    clave: string
     valor: string | null
     _count: ConfiguracionCountAggregateOutputType | null
     _avg: ConfiguracionAvgAggregateOutputType | null
@@ -3394,7 +3394,7 @@ export namespace Prisma {
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      clave: string | null
+      clave: string
       valor: string | null
     }, ExtArgs["result"]["configuracion"]>
     composites: {}
@@ -4016,7 +4016,7 @@ export namespace Prisma {
     /**
      * The data needed to create a configuracion.
      */
-    data?: XOR<configuracionCreateInput, configuracionUncheckedCreateInput>
+    data: XOR<configuracionCreateInput, configuracionUncheckedCreateInput>
   }
 
   /**
@@ -16101,28 +16101,28 @@ export namespace Prisma {
     OR?: configuracionWhereInput[]
     NOT?: configuracionWhereInput | configuracionWhereInput[]
     id?: IntFilter<"configuracion"> | number
-    clave?: StringNullableFilter<"configuracion"> | string | null
+    clave?: StringFilter<"configuracion"> | string
     valor?: StringNullableFilter<"configuracion"> | string | null
   }
 
   export type configuracionOrderByWithRelationInput = {
     id?: SortOrder
-    clave?: SortOrderInput | SortOrder
+    clave?: SortOrder
     valor?: SortOrderInput | SortOrder
   }
 
   export type configuracionWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    clave?: string
     AND?: configuracionWhereInput | configuracionWhereInput[]
     OR?: configuracionWhereInput[]
     NOT?: configuracionWhereInput | configuracionWhereInput[]
-    clave?: StringNullableFilter<"configuracion"> | string | null
     valor?: StringNullableFilter<"configuracion"> | string | null
-  }, "id">
+  }, "id" | "clave">
 
   export type configuracionOrderByWithAggregationInput = {
     id?: SortOrder
-    clave?: SortOrderInput | SortOrder
+    clave?: SortOrder
     valor?: SortOrderInput | SortOrder
     _count?: configuracionCountOrderByAggregateInput
     _avg?: configuracionAvgOrderByAggregateInput
@@ -16136,7 +16136,7 @@ export namespace Prisma {
     OR?: configuracionScalarWhereWithAggregatesInput[]
     NOT?: configuracionScalarWhereWithAggregatesInput | configuracionScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"configuracion"> | number
-    clave?: StringNullableWithAggregatesFilter<"configuracion"> | string | null
+    clave?: StringWithAggregatesFilter<"configuracion"> | string
     valor?: StringNullableWithAggregatesFilter<"configuracion"> | string | null
   }
 
@@ -16930,41 +16930,41 @@ export namespace Prisma {
   }
 
   export type configuracionCreateInput = {
-    clave?: string | null
+    clave: string
     valor?: string | null
   }
 
   export type configuracionUncheckedCreateInput = {
     id?: number
-    clave?: string | null
+    clave: string
     valor?: string | null
   }
 
   export type configuracionUpdateInput = {
-    clave?: NullableStringFieldUpdateOperationsInput | string | null
+    clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type configuracionUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    clave?: NullableStringFieldUpdateOperationsInput | string | null
+    clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type configuracionCreateManyInput = {
     id?: number
-    clave?: string | null
+    clave: string
     valor?: string | null
   }
 
   export type configuracionUpdateManyMutationInput = {
-    clave?: NullableStringFieldUpdateOperationsInput | string | null
+    clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type configuracionUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    clave?: NullableStringFieldUpdateOperationsInput | string | null
+    clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
