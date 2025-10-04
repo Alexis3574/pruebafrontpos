@@ -1,89 +1,115 @@
 'use client';
 
-import { useState } from 'react';
+import { useConfiguracion } from '../../hooks/useConfiguracion';
 
-export default function ConfiguracionForm({ onSave }) {
-  const [config, setConfig] = useState({
-    modoGrises: localStorage.getItem('modoGrises') === 'true' || false,
-    modoContraste: localStorage.getItem('modoContraste') === 'true' || false,
-  });
+export default function ConfiguracionForm() {
+  const { valores, setValores, guardar } = useConfiguracion();
 
-  const handleToggleGrises = () => {
-    const nuevoEstado = !config.modoGrises;
-    setConfig((prev) => ({ ...prev, modoGrises: nuevoEstado }));
-
-    // Guardar preferencia
-    localStorage.setItem('modoGrises', nuevoEstado);
-
-    // Notificar al layout
-    window.dispatchEvent(
-      new CustomEvent('modoGrisesChange', { detail: nuevoEstado })
-    );
+  const handleToggleGrises = async () => {
+    const nuevo = !valores.modoGrises;
+    setValores((prev) => ({ ...prev, modoGrises: nuevo }));
+    await guardar('modoGrises', JSON.stringify(nuevo));
   };
 
-  const handleToggleContraste = () => {
-    const nuevoEstado = !config.modoContraste;
-    setConfig((prev) => ({ ...prev, modoContraste: nuevoEstado }));
-
-    // Guardar preferencia
-    localStorage.setItem('modoContraste', nuevoEstado);
-
-    // Notificar al layout
-    window.dispatchEvent(
-      new CustomEvent('modoContrasteChange', { detail: nuevoEstado })
-    );
+  const handleToggleContraste = async () => {
+    const nuevo = !valores.modoContraste;
+    setValores((prev) => ({ ...prev, modoContraste: nuevo }));
+    await guardar('modoContraste', JSON.stringify(nuevo));
   };
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    onSave(config);
+  const handleTextoChange = async (valor) => {
+    const porcentaje = parseInt(valor);
+    setValores((prev) => ({ ...prev, tamanoTexto: porcentaje }));
+    await guardar('tamanoTexto', porcentaje);
   };
+
+  const handleTipografiaChange = async (valor) => {
+    setValores((prev) => ({ ...prev, tipografia: valor }));
+    await guardar('tipografia', JSON.stringify(valor));
+  };
+
+  const fuentes = [
+    'Inter',
+    'Roboto',
+    'Open Sans',
+    'Lato',
+    'Poppins',
+    'Montserrat',
+    'Nunito',
+    'Merriweather',
+    'Playfair Display',
+    'Source Sans Pro',
+  ];
 
   return (
-    <form onSubmit={handleSave} className="space-y-6 p-4">
-      {/* Opción para escala de grises */}
+    <div className="space-y-6 p-4 max-w-md mx-auto">
+      {/* Escala de grises */}
       <div>
-        <label className="block mb-2 font-semibold">
-          Escala de grises global
-        </label>
+        <label className="block mb-2 font-semibold">Escala de grises global</label>
         <button
-          type="button"
           onClick={handleToggleGrises}
-          className={`px-4 py-2 rounded ${
-            config.modoGrises
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-500 text-white'
+          className={`px-4 py-2 rounded transition ${
+            valores.modoGrises ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'
           }`}
         >
-          {config.modoGrises ? 'Activado' : 'Desactivado'}
+          {valores.modoGrises ? 'Activado' : 'Desactivado'}
         </button>
       </div>
 
-      {/* Opción para contraste */}
+      {/* Contraste */}
+      <div>
+        <label className="block mb-2 font-semibold">Modo alto contraste</label>
+        <button
+          onClick={handleToggleContraste}
+          className={`px-4 py-2 rounded transition ${
+            valores.modoContraste ? 'bg-yellow-500 text-black' : 'bg-gray-500 text-white'
+          }`}
+        >
+          {valores.modoContraste ? 'Activado' : 'Desactivado'}
+        </button>
+      </div>
+
+      {/* Tamaño de texto */}
       <div>
         <label className="block mb-2 font-semibold">
-          Modo alto contraste
+          Tamaño de texto: {valores.tamanoTexto}%
         </label>
-        <button
-          type="button"
-          onClick={handleToggleContraste}
-          className={`px-4 py-2 rounded ${
-            config.modoContraste
-              ? 'bg-yellow-600 text-black'
-              : 'bg-gray-500 text-white'
-          }`}
-        >
-          {config.modoContraste ? 'Activado' : 'Desactivado'}
-        </button>
+        <input
+          type="range"
+          min="50"
+          max="150"
+          step="5"
+          value={valores.tamanoTexto}
+          onChange={(e) => handleTextoChange(e.target.value)}
+          className="w-full cursor-pointer accent-blue-600"
+        />
+        <div className="flex justify-between text-sm text-gray-500 mt-1">
+          <span>Pequeño</span>
+          <span>Predeterminado</span>
+          <span>Grande</span>
+        </div>
       </div>
 
-      {/* Botón Guardar */}
-      <button
-        type="submit"
-        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-      >
-        Guardar configuración
-      </button>
-    </form>
+      {/* Tipografía global */}
+      <div>
+        <label className="block mb-2 font-semibold">Tipografía global</label>
+        <select
+          value={valores.tipografia}
+          onChange={(e) => handleTipografiaChange(e.target.value)}
+          className="w-full border rounded p-2 cursor-pointer"
+          style={{ fontFamily: valores.tipografia }}
+        >
+          {fuentes.map((fuente) => (
+            <option
+              key={fuente}
+              value={fuente}
+              style={{ fontFamily: fuente }}
+            >
+              {fuente}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
   );
 }
