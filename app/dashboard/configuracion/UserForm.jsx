@@ -81,7 +81,6 @@ export default function UserForm({ onSubmit, usuarioEditar, onCancelEdit }) {
         />
       </div>
 
-      {/* Rol */}
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">Rol</label>
         <select
@@ -95,7 +94,6 @@ export default function UserForm({ onSubmit, usuarioEditar, onCancelEdit }) {
         </select>
       </div>
 
-      {/* Botones */}
       <div className="flex items-center gap-4">
         <button
           type="submit"

@@ -114,7 +114,6 @@ export default function Form({ proveedorEditar, onSave }) {
         </div>
       </div>
 
-      {/* Acciones */}
       <div className="mt-6 flex flex-col-reverse items-center justify-end gap-3 sm:flex-row">
         {proveedorEditar && (
           <button

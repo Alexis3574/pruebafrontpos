@@ -8,12 +8,11 @@ export function useConfiguracion() {
     modoContraste: false,
     tamanoTexto: 100,
     tipografia: 'Inter',
-    tamanoCursor: 1, // Escala (1 = normal)
+    tamanoCursor: 1, 
   });
 
   const cargado = useRef(false);
 
-  // 🟢 Obtener configuraciones
   const obtener = async () => {
     try {
       const res = await fetch('/api/configuracion');
@@ -41,7 +40,6 @@ export function useConfiguracion() {
     }
   };
 
-  // 🟠 Guardar (sin loops)
   const guardar = async (clave, valor) => {
     try {
       await fetch(`/api/configuracion/${clave}`, {
@@ -54,11 +52,9 @@ export function useConfiguracion() {
     }
   };
 
-  // 🎨 Aplicar efectos globales
   useEffect(() => {
     if (!cargado.current) return;
 
-    // Modo visual
     let filtro = '';
     if (valores.modoGrises) filtro += 'grayscale(100%) ';
     if (valores.modoContraste) filtro += 'contrast(150%) ';
@@ -66,7 +62,6 @@ export function useConfiguracion() {
     document.documentElement.style.fontSize = `${valores.tamanoTexto}%`;
     document.documentElement.style.fontFamily = valores.tipografia;
 
-    // 🖱️ Escalar cursor real (SVG dinámico)
     const style = document.getElementById('cursor-scale');
     if (style) style.remove();
 

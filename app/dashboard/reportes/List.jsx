@@ -3,13 +3,12 @@ import { useMemo, useState } from "react";
 import { generarPDFReporteLibre } from "@/lib/pdf/reportesTextoPdf";
 
 export default function List({
-  reportes = [],              // [{ id, tipo, datos: { contenido }, fecha|createdAt|created_at }]
-  onEdit,                     // (reporte) => void
-  onDelete,                   // (id) => void
+  reportes = [],              
+  onEdit,                     
+  onDelete,                   
 }) {
   const [q, setQ] = useState("");
 
-  // map flexible de fecha
   const getFecha = (r) => r.fecha || r.createdAt || r.created_at || r.updatedAt || null;
 
   const fmtFecha = (d) => {
@@ -27,7 +26,6 @@ export default function List({
     }
   };
 
-  // Búsqueda local
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return reportes;
@@ -67,7 +65,6 @@ export default function List({
 
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur text-slate-800">
-      {/* Header + búsqueda */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Lista de Reportes</h2>
@@ -179,7 +176,6 @@ export default function List({
   );
 }
 
-/* Íconos inline */
 function SearchIcon(props) {
   return (
     <svg viewBox="0 0 24 24" className={props.className} fill="none" stroke="currentColor" strokeWidth="2">

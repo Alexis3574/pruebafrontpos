@@ -2,7 +2,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// 🟢 GET: obtiene todas las configuraciones
 export async function GET() {
   try {
     const configuraciones = await prisma.configuracion.findMany({
@@ -10,7 +9,7 @@ export async function GET() {
     });
     return NextResponse.json(configuraciones);
   } catch (error) {
-    console.error("❌ Error en GET general:", error);
+    console.error(" Error en GET general:", error);
     return NextResponse.json(
       { error: "Error al obtener configuraciones", detalle: error.message },
       { status: 500 }
@@ -18,7 +17,6 @@ export async function GET() {
   }
 }
 
-// POST: crear nueva configuración
 export async function POST(req) {
   try {
     const { clave, valor } = await req.json();
@@ -39,7 +37,7 @@ export async function POST(req) {
 
     return NextResponse.json(nueva);
   } catch (error) {
-    console.error("❌ Error en POST:", error);
+    console.error(" Error en POST:", error);
     return NextResponse.json(
       { error: "Error al crear configuración" },
       { status: 500 }

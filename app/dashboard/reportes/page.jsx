@@ -39,7 +39,6 @@ export default function PageReportes() {
           <div className="grid gap-6 lg:grid-cols-2">
             <ReporteForm editingId={editingId} onSaved={() => setEditingId(null)} />
             <ReporteList
-              // Soporta ambos casos: si la lista manda el objeto o solo el id
               onEdit={(itemOrId) => setEditingId(itemOrId?.id ?? itemOrId)}
             />
           </div>

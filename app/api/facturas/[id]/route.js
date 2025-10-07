@@ -1,4 +1,3 @@
-// app/api/facturas/[id]/route.js
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
@@ -8,7 +7,6 @@ const json = (obj, status = 200) =>
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });
 
-// ✅ PUT - Actualizar factura
 export async function PUT(req, { params }) {
   try {
     const id = Number(params.id);
@@ -23,7 +21,6 @@ export async function PUT(req, { params }) {
       return json({ ok: false, error: "Factura no encontrada" }, 404);
     }
 
-    // Evita cambios en el ID autoincremental
     if ("id" in data) delete data.id;
 
     const actualizada = await prisma.facturas.update({
@@ -39,7 +36,6 @@ export async function PUT(req, { params }) {
   }
 }
 
-// ✅ DELETE - Eliminar factura
 export async function DELETE(req, { params }) {
   try {
     const id = Number(params.id);
@@ -52,7 +48,6 @@ export async function DELETE(req, { params }) {
       return json({ ok: false, error: "Factura no encontrada" }, 404);
     }
 
-    // Si quieres eliminar también los items relacionados:
     await prisma.factura_items.deleteMany({ where: { facturaId: id } });
 
     await prisma.facturas.delete({ where: { id } });

@@ -23,7 +23,6 @@ export default function CarritoList() {
                 key={item.id}
                 className="flex justify-between items-center border-b pb-2"
               >
-                {/* Nombre y cantidad */}
                 <div className="flex flex-col">
                   <span className="font-medium">{item.producto.nombre}</span>
                   <div className="flex items-center gap-2 mt-1">

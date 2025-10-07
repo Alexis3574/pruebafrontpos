@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-/**
- * ✅ PUT /api/configuracion/[param]
- * Crea o actualiza configuración por clave (no por ID)
- */
+
 export async function PUT(req, context) {
   try {
     const { param } = await context.params;
@@ -18,7 +15,6 @@ export async function PUT(req, context) {
       ? body.valor
       : JSON.stringify(body.valor);
 
-    // 🔍 Buscar si existe
     const existente = await prisma.configuracion.findUnique({
       where: { clave: param },
     });
@@ -37,7 +33,7 @@ export async function PUT(req, context) {
 
     return NextResponse.json(resultado);
   } catch (error) {
-    console.error("❌ Error en PUT:", error);
+    console.error(" Error en PUT:", error);
     return NextResponse.json(
       { error: "Error al actualizar o crear configuración", detalle: error.message },
       { status: 500 }
@@ -45,9 +41,7 @@ export async function PUT(req, context) {
   }
 }
 
-/**
- * ✅ GET /api/configuracion/[param]
- */
+
 export async function GET(_req, context) {
   try {
     const { param } = await context.params;
@@ -65,7 +59,7 @@ export async function GET(_req, context) {
 
     return NextResponse.json({ ...config, valor: valorParseado });
   } catch (error) {
-    console.error("❌ Error en GET:", error);
+    console.error(" Error en GET:", error);
     return NextResponse.json(
       { error: "Error al obtener configuración", detalle: error.message },
       { status: 500 }
@@ -73,9 +67,7 @@ export async function GET(_req, context) {
   }
 }
 
-/**
- * ✅ DELETE /api/configuracion/[param]
- */
+
 export async function DELETE(_req, context) {
   try {
     const { param } = await context.params;
@@ -84,7 +76,7 @@ export async function DELETE(_req, context) {
     });
     return NextResponse.json(eliminado);
   } catch (error) {
-    console.error("❌ Error en DELETE:", error);
+    console.error(" Error en DELETE:", error);
     return NextResponse.json(
       { error: "Error al eliminar configuración", detalle: error.message },
       { status: 500 }

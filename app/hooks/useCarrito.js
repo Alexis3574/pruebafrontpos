@@ -23,7 +23,6 @@ export function useCarrito() {
       const r = await fetch('/api/carrito', { cache: 'no-store' });
       if (!r.ok) throw new Error('No se pudo cargar el carrito');
       const data = await r.json();
-      // La API puede devolver el carrito actual o null
       setCarrito(data || null);
     } catch (e) {
       console.error('❌ cargar carrito:', e);
@@ -107,7 +106,7 @@ export function useCarrito() {
     cargar,
     agregar,
     actualizar,
-    eliminar, // 👈 exportado con este nombre
+    eliminar,
     vaciar,
   };
 }

@@ -51,7 +51,7 @@ export default function RegisterForm() {
         return setError(data.error || 'Error al registrar usuario');
       }
 
-      setExito('✅ Registro exitoso.');
+      setExito(' Registro exitoso.');
       setNombre('');
       setUsuario('');
       setPassword('');

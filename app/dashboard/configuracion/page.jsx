@@ -17,7 +17,6 @@ export default function ConfiguracionPage() {
   const [configuracion, setConfiguracion] = useState([]);
   const { data: session } = useSession();
 
-  // 🔹 Cargar configuraciones desde API
   useEffect(() => {
     fetch('/api/configuracion')
       .then(res => res.json())
@@ -38,7 +37,6 @@ export default function ConfiguracionPage() {
     setUsuarioEditar(usuario);
   };
 
-  // 🔹 Guardar configuraciones
   const handleSaveConfig = async (clave, valor) => {
     try {
       const res = await fetch(`/api/configuracion/${clave}`, {
@@ -59,7 +57,6 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8 text-slate-800">
-      {/* Título */}
       <header>
         <h1 className="text-3xl font-bold text-emerald-700">
           Configuración del Sistema
@@ -69,7 +66,6 @@ export default function ConfiguracionPage() {
         </p>
       </header>
 
-      {/* Gestión de Usuarios */}
       <section className="grid lg:grid-cols-2 gap-6">
         <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur">
           <UserForm
@@ -87,7 +83,6 @@ export default function ConfiguracionPage() {
         />
       </section>
 
-      {/* Personalización (solo admins) */}
       {session?.user?.rol === 'administrador' && (
         <section className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur">
           <h2 className="text-2xl font-bold mb-4 text-emerald-700">

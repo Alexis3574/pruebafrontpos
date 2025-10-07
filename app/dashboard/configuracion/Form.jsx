@@ -6,40 +6,33 @@ import { useConfiguracion } from '../../hooks/useConfiguracion';
 export default function ConfiguracionForm() {
   const { valores, setValores, guardar } = useConfiguracion();
 
-  // 🟢 Escala de grises
   const handleToggleGrises = async () => {
     const nuevo = !valores.modoGrises;
     setValores((prev) => ({ ...prev, modoGrises: nuevo }));
     await guardar('modoGrises', JSON.stringify(nuevo));
   };
 
-  // 🟡 Contraste
   const handleToggleContraste = async () => {
     const nuevo = !valores.modoContraste;
     setValores((prev) => ({ ...prev, modoContraste: nuevo }));
     await guardar('modoContraste', JSON.stringify(nuevo));
   };
 
-  // 🔤 Tamaño del texto
   const handleTextoChange = async (valor) => {
     const porcentaje = parseInt(valor);
     setValores((prev) => ({ ...prev, tamanoTexto: porcentaje }));
     await guardar('tamanoTexto', porcentaje);
   };
 
-  // 🖱️ Tamaño del cursor (punto negro simulado)
   const handleCursorChange = async (valor) => {
     const escala = parseFloat(valor);
     setValores((prev) => ({ ...prev, tamanoCursor: escala }));
     await guardar('tamanoCursor', escala);
   };
 
-  // 🎯 Cursor simulado
   useEffect(() => {
-    // Ocultar el cursor original
     document.body.style.cursor = 'none';
 
-    // Crear o seleccionar el cursor simulado
     let cursorSimulado = document.getElementById('cursor-simulado');
     if (!cursorSimulado) {
       cursorSimulado = document.createElement('div');
@@ -59,20 +52,17 @@ export default function ConfiguracionForm() {
       document.body.appendChild(cursorSimulado);
     }
 
-    // Mover el cursor simulado
     const moverCursor = (e) => {
       cursorSimulado.style.transform = `translate(${e.clientX - cursorSimulado.offsetWidth / 2}px, ${e.clientY - cursorSimulado.offsetHeight / 2}px)`;
     };
 
     window.addEventListener('mousemove', moverCursor);
 
-    // Escalar el punto según la configuración
     const base = 8;
     const nuevoTamaño = base * (valores.tamanoCursor || 1);
     cursorSimulado.style.width = `${nuevoTamaño}px`;
     cursorSimulado.style.height = `${nuevoTamaño}px`;
 
-    // Cambiar color según modo
     if (valores.modoContraste) {
       cursorSimulado.style.background = 'yellow';
       cursorSimulado.style.boxShadow = '0 0 10px 2px rgba(255, 255, 0, 0.8)';
@@ -95,7 +85,6 @@ export default function ConfiguracionForm() {
         Ajustes de Accesibilidad y Apariencia
       </h2>
 
-      {/* Escala de grises */}
       <div className="flex items-center justify-between">
         <label className="font-semibold text-gray-700 dark:text-gray-300">
           Escala de grises global
@@ -110,7 +99,6 @@ export default function ConfiguracionForm() {
         </button>
       </div>
 
-      {/* Contraste */}
       <div className="flex items-center justify-between">
         <label className="font-semibold text-gray-700 dark:text-gray-300">
           Modo alto contraste
@@ -125,7 +113,6 @@ export default function ConfiguracionForm() {
         </button>
       </div>
 
-      {/* Tamaño del texto */}
       <div>
         <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
           Tamaño del texto: {valores.tamanoTexto}%
@@ -146,7 +133,6 @@ export default function ConfiguracionForm() {
         </div>
       </div>
 
-      {/* Tamaño del cursor */}
       <div>
         <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
           Tamaño del cursor: {(valores.tamanoCursor * 100).toFixed(0)}%

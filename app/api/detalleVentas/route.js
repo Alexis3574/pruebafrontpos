@@ -101,7 +101,6 @@ export async function POST(request) {
       },
     });
 
-    // 4) Actualizar stock
     await prisma.productos.update({
       where: { id: productoid },
       data: {

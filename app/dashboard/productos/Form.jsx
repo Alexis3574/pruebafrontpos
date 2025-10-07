@@ -249,7 +249,6 @@ export default function Form({ productoEditar, onSave }) {
   );
 }
 
-/* Icono chevron inline, sin dependencias */
 function ChevronDown(props) {
   return (
     <svg viewBox="0 0 24 24" className={props.className} fill="none" stroke="currentColor" strokeWidth="2">
