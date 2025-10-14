@@ -21,14 +21,19 @@ model usuarios {
   rol      Rol       @default(usuario)
   creadoen DateTime? @default(now()) @db.Timestamp(6)
 
-  // 🔹 Relación inversa
-  carritos Carrito[]
+  carritos        Carrito[]
+  configuraciones configuracion[]
 }
 
 model configuracion {
-  id    Int     @id @default(autoincrement())
-  clave String  @unique @db.VarChar(100)
-  valor String?
+  id        Int     @id @default(autoincrement())
+  clave     String  @db.VarChar(100)
+  valor     String?
+  usuarioid Int?
+
+  usuarios usuarios? @relation(fields: [usuarioid], references: [id], onDelete: Cascade)
+
+  @@unique([clave, usuarioid], name: "clave_usuarioid")
 }
 
 model productos {

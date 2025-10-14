@@ -1,4 +1,5 @@
 'use client';
+
 import { useState, useEffect, useRef } from 'react';
 
 export function useConfiguracion() {
@@ -8,14 +9,15 @@ export function useConfiguracion() {
     modoContraste: false,
     tamanoTexto: 100,
     tipografia: 'Inter',
-    tamanoCursor: 1, 
+    tamanoCursor: 1,
   });
 
   const cargado = useRef(false);
 
+  
   const obtener = async () => {
     try {
-      const res = await fetch('/api/configuracion');
+      const res = await fetch('/api/configuracion', { cache: 'no-store' });
       if (!res.ok) throw new Error('Error al obtener configuraciones');
       const data = await res.json();
 
@@ -27,11 +29,11 @@ export function useConfiguracion() {
 
       setConfiguracion(data);
       setValores({
-        modoGrises: gris ? JSON.parse(gris.valor) : false,
-        modoContraste: contraste ? JSON.parse(contraste.valor) : false,
-        tamanoTexto: texto ? parseInt(texto.valor) : 100,
-        tipografia: fuente ? fuente.valor : 'Inter',
-        tamanoCursor: cursor ? parseFloat(cursor.valor) : 1,
+        modoGrises: gris ? JSON.parse(gris.valor || 'false') : false,
+        modoContraste: contraste ? JSON.parse(contraste.valor || 'false') : false,
+        tamanoTexto: texto ? parseInt(texto.valor || '100') : 100,
+        tipografia: fuente ? fuente.valor || 'Inter' : 'Inter',
+        tamanoCursor: cursor ? parseFloat(cursor.valor || '1') : 1,
       });
 
       cargado.current = true;
@@ -40,15 +42,31 @@ export function useConfiguracion() {
     }
   };
 
+
   const guardar = async (clave, valor) => {
     try {
-      await fetch(`/api/configuracion/${clave}`, {
+      const res = await fetch(`/api/configuracion/${clave}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ valor }),
       });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Error al guardar configuración');
+      }
+
+      setConfiguracion((prev) => {
+        const existe = prev.find((c) => c.clave === clave);
+        if (existe) {
+          return prev.map((c) =>
+            c.clave === clave ? { ...c, valor: JSON.stringify(valor) } : c
+          );
+        }
+        return [...prev, { clave, valor: JSON.stringify(valor) }];
+      });
     } catch (error) {
-      console.error(`❌ Error al guardar ${clave}:`, error);
+      console.error(`❌ Error al guardar "${clave}":`, error);
     }
   };
 
@@ -59,19 +77,21 @@ export function useConfiguracion() {
     if (valores.modoGrises) filtro += 'grayscale(100%) ';
     if (valores.modoContraste) filtro += 'contrast(150%) ';
     document.documentElement.style.filter = filtro.trim();
+
     document.documentElement.style.fontSize = `${valores.tamanoTexto}%`;
+
     document.documentElement.style.fontFamily = valores.tipografia;
 
-    const style = document.getElementById('cursor-scale');
-    if (style) style.remove();
+    const oldStyle = document.getElementById('cursor-scale');
+    if (oldStyle) oldStyle.remove();
 
-    const newStyle = document.createElement('style');
-    newStyle.id = 'cursor-scale';
+    const style = document.createElement('style');
+    style.id = 'cursor-scale';
 
     const size = 16 * valores.tamanoCursor;
     const strokeColor = valores.modoContraste ? 'yellow' : 'black';
 
-    newStyle.textContent = `
+    style.textContent = `
       html, body, * {
         cursor: url('data:image/svg+xml;utf8,
           <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
@@ -82,9 +102,12 @@ export function useConfiguracion() {
       }
     `;
 
-    document.head.appendChild(newStyle);
+    document.head.appendChild(style);
   }, [valores]);
 
+  /**
+   * 🚀 Carga inicial
+   */
   useEffect(() => {
     obtener();
   }, []);
@@ -94,5 +117,6 @@ export function useConfiguracion() {
     valores,
     setValores,
     guardar,
+    obtener,
   };
 }

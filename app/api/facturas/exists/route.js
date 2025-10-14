@@ -1,4 +1,3 @@
-// app/api/facturas/exists/route.js
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
@@ -9,9 +8,8 @@ const json = (obj, status = 200) =>
   });
 
 function parsePattern(str) {
-  // Devuelve { prefix, numStr, num } para folios tipo "A-00123", "FAC2025-0007" o solo "0009"
   if (typeof str !== "string") return { prefix: "", numStr: "", num: NaN };
-  const m = String(str).match(/^(\D*?)(\d+)$/); // prefijo no-dígitos + dígitos al final
+  const m = String(str).match(/^(\D*?)(\d+)$/); 
   if (!m) return { prefix: "", numStr: "", num: NaN };
   return { prefix: m[1], numStr: m[2], num: Number(m[2]) };
 }
@@ -24,20 +22,17 @@ export async function GET(req) {
 
     if (!folio) return json({ ok: false, error: "Parámetro 'folio' requerido." }, 400);
 
-    // ¿Existe exactamente este folio (y serie si se envía)?
     const where = {
       folio,
       ...(serie ? { serie } : { serie: null }),
     };
 
-    // Nota: si permites folios duplicados entre series, quita "serie: null" cuando no venga
     const existing = await prisma.facturas.findFirst({
       where,
       select: { id: true, folio: true, serie: true },
     });
 
-    // --------- Sugerencia de siguiente folio (best-effort) ----------
-    // Tomamos últimas 200 facturas con misma serie (o null) y buscamos el mayor número al final
+ 
     let suggestion = null;
     const { prefix, numStr, num } = parsePattern(folio);
 
@@ -49,7 +44,6 @@ export async function GET(req) {
         select: { folio: true },
       });
 
-      // Filtra por mismo prefijo y toma el máximo número
       let maxNum = num;
       let width = numStr.length;
 
@@ -71,7 +65,7 @@ export async function GET(req) {
       ok: true,
       exists: Boolean(existing),
       match: existing || null,
-      suggestion, // null si no pudo inferir patrón
+      suggestion, 
     });
   } catch (err) {
     console.error("GET /api/facturas/exists error", err);

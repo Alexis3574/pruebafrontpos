@@ -165,7 +165,6 @@ export default function Form({ itemEditar, onSave }) {
           />
         </div>
 
-        {/* Fecha */}
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Fecha

@@ -13,7 +13,6 @@ export default function List({ data = [], onEdit, onDelete }) {
     []
   );
 
-  // total general
   const totalGeneral = useMemo(() => {
     return data.reduce((acc, d) => {
       const precio = parseFloat(d.preciounitario);
