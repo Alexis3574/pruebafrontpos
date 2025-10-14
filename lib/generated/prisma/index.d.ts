@@ -107,7 +107,7 @@ export const Rol: typeof $Enums.Rol
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-  U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
   ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -139,13 +139,6 @@ export class PrismaClient<
    * Disconnect from the database
    */
   $disconnect(): $Utils.JsPromise<void>;
-
-  /**
-   * Add a middleware
-   * @deprecated since 4.16.0. For new code, prefer client extensions instead.
-   * @see https://pris.ly/d/extensions
-   */
-  $use(cb: Prisma.Middleware): void
 
 /**
    * Executes a prepared raw query and returns the number of affected rows.
@@ -393,8 +386,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.7.0
-   * Query Engine version: 3cff47a7f5d65c3ea74883f1d736e41d68ce91ed
+   * Prisma Client JS version: 6.17.1
+   * Query Engine version: 272a37d34178c2894197e17273bf937f25acdeac
    */
   export type PrismaVersion = {
     client: string
@@ -1740,16 +1733,24 @@ export namespace Prisma {
     /**
      * @example
      * ```
-     * // Defaults to stdout
+     * // Shorthand for `emit: 'stdout'`
      * log: ['query', 'info', 'warn', 'error']
      * 
-     * // Emit as events
+     * // Emit as events only
      * log: [
-     *   { emit: 'stdout', level: 'query' },
-     *   { emit: 'stdout', level: 'info' },
-     *   { emit: 'stdout', level: 'warn' }
-     *   { emit: 'stdout', level: 'error' }
+     *   { emit: 'event', level: 'query' },
+     *   { emit: 'event', level: 'info' },
+     *   { emit: 'event', level: 'warn' }
+     *   { emit: 'event', level: 'error' }
      * ]
+     * 
+     * / Emit as events and log to stdout
+     * og: [
+     *  { emit: 'stdout', level: 'query' },
+     *  { emit: 'stdout', level: 'info' },
+     *  { emit: 'stdout', level: 'warn' }
+     *  { emit: 'stdout', level: 'error' }
+     * 
      * ```
      * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
      */
@@ -1764,6 +1765,10 @@ export namespace Prisma {
       timeout?: number
       isolationLevel?: Prisma.TransactionIsolationLevel
     }
+    /**
+     * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-planetscale`
+     */
+    adapter?: runtime.SqlDriverAdapterFactory | null
     /**
      * Global configuration for omitting model fields by default.
      * 
@@ -1802,10 +1807,15 @@ export namespace Prisma {
     emit: 'stdout' | 'event'
   }
 
-  export type GetLogType<T extends LogLevel | LogDefinition> = T extends LogDefinition ? T['emit'] extends 'event' ? T['level'] : never : never
-  export type GetEvents<T extends any> = T extends Array<LogLevel | LogDefinition> ?
-    GetLogType<T[0]> | GetLogType<T[1]> | GetLogType<T[2]> | GetLogType<T[3]>
-    : never
+  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
+
+  export type GetLogType<T> = CheckIsLogLevel<
+    T extends LogDefinition ? T['level'] : T
+  >;
+
+  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
+    ? GetLogType<T[number]>
+    : never;
 
   export type QueryEvent = {
     timestamp: Date
@@ -1846,25 +1856,6 @@ export namespace Prisma {
     | 'findRaw'
     | 'groupBy'
 
-  /**
-   * These options are being passed into the middleware as "params"
-   */
-  export type MiddlewareParams = {
-    model?: ModelName
-    action: PrismaAction
-    args: any
-    dataPath: string[]
-    runInTransaction: boolean
-  }
-
-  /**
-   * The `T` type makes sure, that the `return proceed` is not forgotten in the middleware implementation
-   */
-  export type Middleware<T = any> = (
-    params: MiddlewareParams,
-    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
-  ) => $Utils.JsPromise<T>
-
   // tested in getLogLevel.test.ts
   export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
 
@@ -1888,10 +1879,12 @@ export namespace Prisma {
 
   export type UsuariosCountOutputType = {
     carritos: number
+    configuraciones: number
   }
 
   export type UsuariosCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     carritos?: boolean | UsuariosCountOutputTypeCountCarritosArgs
+    configuraciones?: boolean | UsuariosCountOutputTypeCountConfiguracionesArgs
   }
 
   // Custom InputTypes
@@ -1910,6 +1903,13 @@ export namespace Prisma {
    */
   export type UsuariosCountOutputTypeCountCarritosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CarritoWhereInput
+  }
+
+  /**
+   * UsuariosCountOutputType without action
+   */
+  export type UsuariosCountOutputTypeCountConfiguracionesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: configuracionWhereInput
   }
 
 
@@ -2275,6 +2275,7 @@ export namespace Prisma {
     rol?: boolean
     creadoen?: boolean
     carritos?: boolean | usuarios$carritosArgs<ExtArgs>
+    configuraciones?: boolean | usuarios$configuracionesArgs<ExtArgs>
     _count?: boolean | UsuariosCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["usuarios"]>
 
@@ -2308,6 +2309,7 @@ export namespace Prisma {
   export type usuariosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nombre" | "usuario" | "password" | "rol" | "creadoen", ExtArgs["result"]["usuarios"]>
   export type usuariosInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     carritos?: boolean | usuarios$carritosArgs<ExtArgs>
+    configuraciones?: boolean | usuarios$configuracionesArgs<ExtArgs>
     _count?: boolean | UsuariosCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type usuariosIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2317,6 +2319,7 @@ export namespace Prisma {
     name: "usuarios"
     objects: {
       carritos: Prisma.$CarritoPayload<ExtArgs>[]
+      configuraciones: Prisma.$configuracionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -2720,6 +2723,7 @@ export namespace Prisma {
   export interface Prisma__usuariosClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     carritos<T extends usuarios$carritosArgs<ExtArgs> = {}>(args?: Subset<T, usuarios$carritosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CarritoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    configuraciones<T extends usuarios$configuracionesArgs<ExtArgs> = {}>(args?: Subset<T, usuarios$configuracionesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$configuracionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3167,6 +3171,30 @@ export namespace Prisma {
   }
 
   /**
+   * usuarios.configuraciones
+   */
+  export type usuarios$configuracionesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the configuracion
+     */
+    select?: configuracionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the configuracion
+     */
+    omit?: configuracionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
+    where?: configuracionWhereInput
+    orderBy?: configuracionOrderByWithRelationInput | configuracionOrderByWithRelationInput[]
+    cursor?: configuracionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConfiguracionScalarFieldEnum | ConfiguracionScalarFieldEnum[]
+  }
+
+  /**
    * usuarios without action
    */
   export type usuariosDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3199,56 +3227,66 @@ export namespace Prisma {
 
   export type ConfiguracionAvgAggregateOutputType = {
     id: number | null
+    usuarioid: number | null
   }
 
   export type ConfiguracionSumAggregateOutputType = {
     id: number | null
+    usuarioid: number | null
   }
 
   export type ConfiguracionMinAggregateOutputType = {
     id: number | null
     clave: string | null
     valor: string | null
+    usuarioid: number | null
   }
 
   export type ConfiguracionMaxAggregateOutputType = {
     id: number | null
     clave: string | null
     valor: string | null
+    usuarioid: number | null
   }
 
   export type ConfiguracionCountAggregateOutputType = {
     id: number
     clave: number
     valor: number
+    usuarioid: number
     _all: number
   }
 
 
   export type ConfiguracionAvgAggregateInputType = {
     id?: true
+    usuarioid?: true
   }
 
   export type ConfiguracionSumAggregateInputType = {
     id?: true
+    usuarioid?: true
   }
 
   export type ConfiguracionMinAggregateInputType = {
     id?: true
     clave?: true
     valor?: true
+    usuarioid?: true
   }
 
   export type ConfiguracionMaxAggregateInputType = {
     id?: true
     clave?: true
     valor?: true
+    usuarioid?: true
   }
 
   export type ConfiguracionCountAggregateInputType = {
     id?: true
     clave?: true
     valor?: true
+    usuarioid?: true
     _all?: true
   }
 
@@ -3342,6 +3380,7 @@ export namespace Prisma {
     id: number
     clave: string
     valor: string | null
+    usuarioid: number | null
     _count: ConfiguracionCountAggregateOutputType | null
     _avg: ConfiguracionAvgAggregateOutputType | null
     _sum: ConfiguracionSumAggregateOutputType | null
@@ -3367,35 +3406,54 @@ export namespace Prisma {
     id?: boolean
     clave?: boolean
     valor?: boolean
+    usuarioid?: boolean
+    usuarios?: boolean | configuracion$usuariosArgs<ExtArgs>
   }, ExtArgs["result"]["configuracion"]>
 
   export type configuracionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     clave?: boolean
     valor?: boolean
+    usuarioid?: boolean
+    usuarios?: boolean | configuracion$usuariosArgs<ExtArgs>
   }, ExtArgs["result"]["configuracion"]>
 
   export type configuracionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     clave?: boolean
     valor?: boolean
+    usuarioid?: boolean
+    usuarios?: boolean | configuracion$usuariosArgs<ExtArgs>
   }, ExtArgs["result"]["configuracion"]>
 
   export type configuracionSelectScalar = {
     id?: boolean
     clave?: boolean
     valor?: boolean
+    usuarioid?: boolean
   }
 
-  export type configuracionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clave" | "valor", ExtArgs["result"]["configuracion"]>
+  export type configuracionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "clave" | "valor" | "usuarioid", ExtArgs["result"]["configuracion"]>
+  export type configuracionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    usuarios?: boolean | configuracion$usuariosArgs<ExtArgs>
+  }
+  export type configuracionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    usuarios?: boolean | configuracion$usuariosArgs<ExtArgs>
+  }
+  export type configuracionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    usuarios?: boolean | configuracion$usuariosArgs<ExtArgs>
+  }
 
   export type $configuracionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "configuracion"
-    objects: {}
+    objects: {
+      usuarios: Prisma.$usuariosPayload<ExtArgs> | null
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       clave: string
       valor: string | null
+      usuarioid: number | null
     }, ExtArgs["result"]["configuracion"]>
     composites: {}
   }
@@ -3790,6 +3848,7 @@ export namespace Prisma {
    */
   export interface Prisma__configuracionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    usuarios<T extends configuracion$usuariosArgs<ExtArgs> = {}>(args?: Subset<T, configuracion$usuariosArgs<ExtArgs>>): Prisma__usuariosClient<$Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3822,6 +3881,7 @@ export namespace Prisma {
     readonly id: FieldRef<"configuracion", 'Int'>
     readonly clave: FieldRef<"configuracion", 'String'>
     readonly valor: FieldRef<"configuracion", 'String'>
+    readonly usuarioid: FieldRef<"configuracion", 'Int'>
   }
     
 
@@ -3838,6 +3898,10 @@ export namespace Prisma {
      * Omit specific fields from the configuracion
      */
     omit?: configuracionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
     /**
      * Filter, which configuracion to fetch.
      */
@@ -3857,6 +3921,10 @@ export namespace Prisma {
      */
     omit?: configuracionOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
+    /**
      * Filter, which configuracion to fetch.
      */
     where: configuracionWhereUniqueInput
@@ -3874,6 +3942,10 @@ export namespace Prisma {
      * Omit specific fields from the configuracion
      */
     omit?: configuracionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
     /**
      * Filter, which configuracion to fetch.
      */
@@ -3923,6 +3995,10 @@ export namespace Prisma {
      */
     omit?: configuracionOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
+    /**
      * Filter, which configuracion to fetch.
      */
     where?: configuracionWhereInput
@@ -3971,6 +4047,10 @@ export namespace Prisma {
      */
     omit?: configuracionOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
+    /**
      * Filter, which configuracions to fetch.
      */
     where?: configuracionWhereInput
@@ -4014,6 +4094,10 @@ export namespace Prisma {
      */
     omit?: configuracionOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
+    /**
      * The data needed to create a configuracion.
      */
     data: XOR<configuracionCreateInput, configuracionUncheckedCreateInput>
@@ -4047,6 +4131,10 @@ export namespace Prisma {
      */
     data: configuracionCreateManyInput | configuracionCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4061,6 +4149,10 @@ export namespace Prisma {
      * Omit specific fields from the configuracion
      */
     omit?: configuracionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
     /**
      * The data needed to update a configuracion.
      */
@@ -4113,6 +4205,10 @@ export namespace Prisma {
      * Limit how many configuracions to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4127,6 +4223,10 @@ export namespace Prisma {
      * Omit specific fields from the configuracion
      */
     omit?: configuracionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
     /**
      * The filter to search for the configuracion to update in case it exists.
      */
@@ -4154,6 +4254,10 @@ export namespace Prisma {
      */
     omit?: configuracionOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
+    /**
      * Filter which configuracion to delete.
      */
     where: configuracionWhereUniqueInput
@@ -4174,6 +4278,25 @@ export namespace Prisma {
   }
 
   /**
+   * configuracion.usuarios
+   */
+  export type configuracion$usuariosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the usuarios
+     */
+    select?: usuariosSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the usuarios
+     */
+    omit?: usuariosOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: usuariosInclude<ExtArgs> | null
+    where?: usuariosWhereInput
+  }
+
+  /**
    * configuracion without action
    */
   export type configuracionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4185,6 +4308,10 @@ export namespace Prisma {
      * Omit specific fields from the configuracion
      */
     omit?: configuracionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: configuracionInclude<ExtArgs> | null
   }
 
 
@@ -15743,7 +15870,8 @@ export namespace Prisma {
   export const ConfiguracionScalarFieldEnum: {
     id: 'id',
     clave: 'clave',
-    valor: 'valor'
+    valor: 'valor',
+    usuarioid: 'usuarioid'
   };
 
   export type ConfiguracionScalarFieldEnum = (typeof ConfiguracionScalarFieldEnum)[keyof typeof ConfiguracionScalarFieldEnum]
@@ -16045,6 +16173,7 @@ export namespace Prisma {
     rol?: EnumRolFilter<"usuarios"> | $Enums.Rol
     creadoen?: DateTimeNullableFilter<"usuarios"> | Date | string | null
     carritos?: CarritoListRelationFilter
+    configuraciones?: ConfiguracionListRelationFilter
   }
 
   export type usuariosOrderByWithRelationInput = {
@@ -16055,6 +16184,7 @@ export namespace Prisma {
     rol?: SortOrder
     creadoen?: SortOrderInput | SortOrder
     carritos?: CarritoOrderByRelationAggregateInput
+    configuraciones?: configuracionOrderByRelationAggregateInput
   }
 
   export type usuariosWhereUniqueInput = Prisma.AtLeast<{
@@ -16068,6 +16198,7 @@ export namespace Prisma {
     rol?: EnumRolFilter<"usuarios"> | $Enums.Rol
     creadoen?: DateTimeNullableFilter<"usuarios"> | Date | string | null
     carritos?: CarritoListRelationFilter
+    configuraciones?: ConfiguracionListRelationFilter
   }, "id" | "usuario">
 
   export type usuariosOrderByWithAggregationInput = {
@@ -16103,27 +16234,35 @@ export namespace Prisma {
     id?: IntFilter<"configuracion"> | number
     clave?: StringFilter<"configuracion"> | string
     valor?: StringNullableFilter<"configuracion"> | string | null
+    usuarioid?: IntNullableFilter<"configuracion"> | number | null
+    usuarios?: XOR<UsuariosNullableScalarRelationFilter, usuariosWhereInput> | null
   }
 
   export type configuracionOrderByWithRelationInput = {
     id?: SortOrder
     clave?: SortOrder
     valor?: SortOrderInput | SortOrder
+    usuarioid?: SortOrderInput | SortOrder
+    usuarios?: usuariosOrderByWithRelationInput
   }
 
   export type configuracionWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    clave?: string
+    clave_usuarioid?: configuracionClave_usuarioidCompoundUniqueInput
     AND?: configuracionWhereInput | configuracionWhereInput[]
     OR?: configuracionWhereInput[]
     NOT?: configuracionWhereInput | configuracionWhereInput[]
+    clave?: StringFilter<"configuracion"> | string
     valor?: StringNullableFilter<"configuracion"> | string | null
-  }, "id" | "clave">
+    usuarioid?: IntNullableFilter<"configuracion"> | number | null
+    usuarios?: XOR<UsuariosNullableScalarRelationFilter, usuariosWhereInput> | null
+  }, "id" | "clave_usuarioid">
 
   export type configuracionOrderByWithAggregationInput = {
     id?: SortOrder
     clave?: SortOrder
     valor?: SortOrderInput | SortOrder
+    usuarioid?: SortOrderInput | SortOrder
     _count?: configuracionCountOrderByAggregateInput
     _avg?: configuracionAvgOrderByAggregateInput
     _max?: configuracionMaxOrderByAggregateInput
@@ -16138,6 +16277,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"configuracion"> | number
     clave?: StringWithAggregatesFilter<"configuracion"> | string
     valor?: StringNullableWithAggregatesFilter<"configuracion"> | string | null
+    usuarioid?: IntNullableWithAggregatesFilter<"configuracion"> | number | null
   }
 
   export type productosWhereInput = {
@@ -16872,6 +17012,7 @@ export namespace Prisma {
     rol?: $Enums.Rol
     creadoen?: Date | string | null
     carritos?: CarritoCreateNestedManyWithoutUsuariosInput
+    configuraciones?: configuracionCreateNestedManyWithoutUsuariosInput
   }
 
   export type usuariosUncheckedCreateInput = {
@@ -16882,6 +17023,7 @@ export namespace Prisma {
     rol?: $Enums.Rol
     creadoen?: Date | string | null
     carritos?: CarritoUncheckedCreateNestedManyWithoutUsuariosInput
+    configuraciones?: configuracionUncheckedCreateNestedManyWithoutUsuariosInput
   }
 
   export type usuariosUpdateInput = {
@@ -16891,6 +17033,7 @@ export namespace Prisma {
     rol?: EnumRolFieldUpdateOperationsInput | $Enums.Rol
     creadoen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     carritos?: CarritoUpdateManyWithoutUsuariosNestedInput
+    configuraciones?: configuracionUpdateManyWithoutUsuariosNestedInput
   }
 
   export type usuariosUncheckedUpdateInput = {
@@ -16901,6 +17044,7 @@ export namespace Prisma {
     rol?: EnumRolFieldUpdateOperationsInput | $Enums.Rol
     creadoen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     carritos?: CarritoUncheckedUpdateManyWithoutUsuariosNestedInput
+    configuraciones?: configuracionUncheckedUpdateManyWithoutUsuariosNestedInput
   }
 
   export type usuariosCreateManyInput = {
@@ -16932,29 +17076,34 @@ export namespace Prisma {
   export type configuracionCreateInput = {
     clave: string
     valor?: string | null
+    usuarios?: usuariosCreateNestedOneWithoutConfiguracionesInput
   }
 
   export type configuracionUncheckedCreateInput = {
     id?: number
     clave: string
     valor?: string | null
+    usuarioid?: number | null
   }
 
   export type configuracionUpdateInput = {
     clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
+    usuarios?: usuariosUpdateOneWithoutConfiguracionesNestedInput
   }
 
   export type configuracionUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
+    usuarioid?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type configuracionCreateManyInput = {
     id?: number
     clave: string
     valor?: string | null
+    usuarioid?: number | null
   }
 
   export type configuracionUpdateManyMutationInput = {
@@ -16966,6 +17115,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     clave?: StringFieldUpdateOperationsInput | string
     valor?: NullableStringFieldUpdateOperationsInput | string | null
+    usuarioid?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type productosCreateInput = {
@@ -17779,12 +17929,22 @@ export namespace Prisma {
     none?: CarritoWhereInput
   }
 
+  export type ConfiguracionListRelationFilter = {
+    every?: configuracionWhereInput
+    some?: configuracionWhereInput
+    none?: configuracionWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type CarritoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type configuracionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -17899,30 +18059,72 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type UsuariosNullableScalarRelationFilter = {
+    is?: usuariosWhereInput | null
+    isNot?: usuariosWhereInput | null
+  }
+
+  export type configuracionClave_usuarioidCompoundUniqueInput = {
+    clave: string
+    usuarioid: number
+  }
+
   export type configuracionCountOrderByAggregateInput = {
     id?: SortOrder
     clave?: SortOrder
     valor?: SortOrder
+    usuarioid?: SortOrder
   }
 
   export type configuracionAvgOrderByAggregateInput = {
     id?: SortOrder
+    usuarioid?: SortOrder
   }
 
   export type configuracionMaxOrderByAggregateInput = {
     id?: SortOrder
     clave?: SortOrder
     valor?: SortOrder
+    usuarioid?: SortOrder
   }
 
   export type configuracionMinOrderByAggregateInput = {
     id?: SortOrder
     clave?: SortOrder
     valor?: SortOrder
+    usuarioid?: SortOrder
   }
 
   export type configuracionSumOrderByAggregateInput = {
     id?: SortOrder
+    usuarioid?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type DecimalNullableFilter<$PrismaModel = never> = {
@@ -17934,17 +18136,6 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type DetalleventasListRelationFilter = {
@@ -18046,22 +18237,6 @@ export namespace Prisma {
     _sum?: NestedDecimalNullableFilter<$PrismaModel>
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type proveedoresCountOrderByAggregateInput = {
@@ -18652,11 +18827,25 @@ export namespace Prisma {
     connect?: CarritoWhereUniqueInput | CarritoWhereUniqueInput[]
   }
 
+  export type configuracionCreateNestedManyWithoutUsuariosInput = {
+    create?: XOR<configuracionCreateWithoutUsuariosInput, configuracionUncheckedCreateWithoutUsuariosInput> | configuracionCreateWithoutUsuariosInput[] | configuracionUncheckedCreateWithoutUsuariosInput[]
+    connectOrCreate?: configuracionCreateOrConnectWithoutUsuariosInput | configuracionCreateOrConnectWithoutUsuariosInput[]
+    createMany?: configuracionCreateManyUsuariosInputEnvelope
+    connect?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+  }
+
   export type CarritoUncheckedCreateNestedManyWithoutUsuariosInput = {
     create?: XOR<CarritoCreateWithoutUsuariosInput, CarritoUncheckedCreateWithoutUsuariosInput> | CarritoCreateWithoutUsuariosInput[] | CarritoUncheckedCreateWithoutUsuariosInput[]
     connectOrCreate?: CarritoCreateOrConnectWithoutUsuariosInput | CarritoCreateOrConnectWithoutUsuariosInput[]
     createMany?: CarritoCreateManyUsuariosInputEnvelope
     connect?: CarritoWhereUniqueInput | CarritoWhereUniqueInput[]
+  }
+
+  export type configuracionUncheckedCreateNestedManyWithoutUsuariosInput = {
+    create?: XOR<configuracionCreateWithoutUsuariosInput, configuracionUncheckedCreateWithoutUsuariosInput> | configuracionCreateWithoutUsuariosInput[] | configuracionUncheckedCreateWithoutUsuariosInput[]
+    connectOrCreate?: configuracionCreateOrConnectWithoutUsuariosInput | configuracionCreateOrConnectWithoutUsuariosInput[]
+    createMany?: configuracionCreateManyUsuariosInputEnvelope
+    connect?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
   }
 
   export type NullableStringFieldUpdateOperationsInput = {
@@ -18689,6 +18878,20 @@ export namespace Prisma {
     deleteMany?: CarritoScalarWhereInput | CarritoScalarWhereInput[]
   }
 
+  export type configuracionUpdateManyWithoutUsuariosNestedInput = {
+    create?: XOR<configuracionCreateWithoutUsuariosInput, configuracionUncheckedCreateWithoutUsuariosInput> | configuracionCreateWithoutUsuariosInput[] | configuracionUncheckedCreateWithoutUsuariosInput[]
+    connectOrCreate?: configuracionCreateOrConnectWithoutUsuariosInput | configuracionCreateOrConnectWithoutUsuariosInput[]
+    upsert?: configuracionUpsertWithWhereUniqueWithoutUsuariosInput | configuracionUpsertWithWhereUniqueWithoutUsuariosInput[]
+    createMany?: configuracionCreateManyUsuariosInputEnvelope
+    set?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    disconnect?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    delete?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    connect?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    update?: configuracionUpdateWithWhereUniqueWithoutUsuariosInput | configuracionUpdateWithWhereUniqueWithoutUsuariosInput[]
+    updateMany?: configuracionUpdateManyWithWhereWithoutUsuariosInput | configuracionUpdateManyWithWhereWithoutUsuariosInput[]
+    deleteMany?: configuracionScalarWhereInput | configuracionScalarWhereInput[]
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -18709,6 +18912,44 @@ export namespace Prisma {
     update?: CarritoUpdateWithWhereUniqueWithoutUsuariosInput | CarritoUpdateWithWhereUniqueWithoutUsuariosInput[]
     updateMany?: CarritoUpdateManyWithWhereWithoutUsuariosInput | CarritoUpdateManyWithWhereWithoutUsuariosInput[]
     deleteMany?: CarritoScalarWhereInput | CarritoScalarWhereInput[]
+  }
+
+  export type configuracionUncheckedUpdateManyWithoutUsuariosNestedInput = {
+    create?: XOR<configuracionCreateWithoutUsuariosInput, configuracionUncheckedCreateWithoutUsuariosInput> | configuracionCreateWithoutUsuariosInput[] | configuracionUncheckedCreateWithoutUsuariosInput[]
+    connectOrCreate?: configuracionCreateOrConnectWithoutUsuariosInput | configuracionCreateOrConnectWithoutUsuariosInput[]
+    upsert?: configuracionUpsertWithWhereUniqueWithoutUsuariosInput | configuracionUpsertWithWhereUniqueWithoutUsuariosInput[]
+    createMany?: configuracionCreateManyUsuariosInputEnvelope
+    set?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    disconnect?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    delete?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    connect?: configuracionWhereUniqueInput | configuracionWhereUniqueInput[]
+    update?: configuracionUpdateWithWhereUniqueWithoutUsuariosInput | configuracionUpdateWithWhereUniqueWithoutUsuariosInput[]
+    updateMany?: configuracionUpdateManyWithWhereWithoutUsuariosInput | configuracionUpdateManyWithWhereWithoutUsuariosInput[]
+    deleteMany?: configuracionScalarWhereInput | configuracionScalarWhereInput[]
+  }
+
+  export type usuariosCreateNestedOneWithoutConfiguracionesInput = {
+    create?: XOR<usuariosCreateWithoutConfiguracionesInput, usuariosUncheckedCreateWithoutConfiguracionesInput>
+    connectOrCreate?: usuariosCreateOrConnectWithoutConfiguracionesInput
+    connect?: usuariosWhereUniqueInput
+  }
+
+  export type usuariosUpdateOneWithoutConfiguracionesNestedInput = {
+    create?: XOR<usuariosCreateWithoutConfiguracionesInput, usuariosUncheckedCreateWithoutConfiguracionesInput>
+    connectOrCreate?: usuariosCreateOrConnectWithoutConfiguracionesInput
+    upsert?: usuariosUpsertWithoutConfiguracionesInput
+    disconnect?: usuariosWhereInput | boolean
+    delete?: usuariosWhereInput | boolean
+    connect?: usuariosWhereUniqueInput
+    update?: XOR<XOR<usuariosUpdateToOneWithWhereWithoutConfiguracionesInput, usuariosUpdateWithoutConfiguracionesInput>, usuariosUncheckedUpdateWithoutConfiguracionesInput>
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type detalleventasCreateNestedManyWithoutProductosInput = {
@@ -18759,14 +19000,6 @@ export namespace Prisma {
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type detalleventasUpdateManyWithoutProductosNestedInput = {
@@ -19314,33 +19547,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
-  }
-
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -19366,6 +19572,33 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -19482,6 +19715,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type configuracionCreateWithoutUsuariosInput = {
+    clave: string
+    valor?: string | null
+  }
+
+  export type configuracionUncheckedCreateWithoutUsuariosInput = {
+    id?: number
+    clave: string
+    valor?: string | null
+  }
+
+  export type configuracionCreateOrConnectWithoutUsuariosInput = {
+    where: configuracionWhereUniqueInput
+    create: XOR<configuracionCreateWithoutUsuariosInput, configuracionUncheckedCreateWithoutUsuariosInput>
+  }
+
+  export type configuracionCreateManyUsuariosInputEnvelope = {
+    data: configuracionCreateManyUsuariosInput | configuracionCreateManyUsuariosInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CarritoUpsertWithWhereUniqueWithoutUsuariosInput = {
     where: CarritoWhereUniqueInput
     update: XOR<CarritoUpdateWithoutUsuariosInput, CarritoUncheckedUpdateWithoutUsuariosInput>
@@ -19506,6 +19760,86 @@ export namespace Prisma {
     usuarioId?: IntFilter<"Carrito"> | number
     creadoEn?: DateTimeFilter<"Carrito"> | Date | string
     estado?: StringFilter<"Carrito"> | string
+  }
+
+  export type configuracionUpsertWithWhereUniqueWithoutUsuariosInput = {
+    where: configuracionWhereUniqueInput
+    update: XOR<configuracionUpdateWithoutUsuariosInput, configuracionUncheckedUpdateWithoutUsuariosInput>
+    create: XOR<configuracionCreateWithoutUsuariosInput, configuracionUncheckedCreateWithoutUsuariosInput>
+  }
+
+  export type configuracionUpdateWithWhereUniqueWithoutUsuariosInput = {
+    where: configuracionWhereUniqueInput
+    data: XOR<configuracionUpdateWithoutUsuariosInput, configuracionUncheckedUpdateWithoutUsuariosInput>
+  }
+
+  export type configuracionUpdateManyWithWhereWithoutUsuariosInput = {
+    where: configuracionScalarWhereInput
+    data: XOR<configuracionUpdateManyMutationInput, configuracionUncheckedUpdateManyWithoutUsuariosInput>
+  }
+
+  export type configuracionScalarWhereInput = {
+    AND?: configuracionScalarWhereInput | configuracionScalarWhereInput[]
+    OR?: configuracionScalarWhereInput[]
+    NOT?: configuracionScalarWhereInput | configuracionScalarWhereInput[]
+    id?: IntFilter<"configuracion"> | number
+    clave?: StringFilter<"configuracion"> | string
+    valor?: StringNullableFilter<"configuracion"> | string | null
+    usuarioid?: IntNullableFilter<"configuracion"> | number | null
+  }
+
+  export type usuariosCreateWithoutConfiguracionesInput = {
+    nombre?: string | null
+    usuario: string
+    password: string
+    rol?: $Enums.Rol
+    creadoen?: Date | string | null
+    carritos?: CarritoCreateNestedManyWithoutUsuariosInput
+  }
+
+  export type usuariosUncheckedCreateWithoutConfiguracionesInput = {
+    id?: number
+    nombre?: string | null
+    usuario: string
+    password: string
+    rol?: $Enums.Rol
+    creadoen?: Date | string | null
+    carritos?: CarritoUncheckedCreateNestedManyWithoutUsuariosInput
+  }
+
+  export type usuariosCreateOrConnectWithoutConfiguracionesInput = {
+    where: usuariosWhereUniqueInput
+    create: XOR<usuariosCreateWithoutConfiguracionesInput, usuariosUncheckedCreateWithoutConfiguracionesInput>
+  }
+
+  export type usuariosUpsertWithoutConfiguracionesInput = {
+    update: XOR<usuariosUpdateWithoutConfiguracionesInput, usuariosUncheckedUpdateWithoutConfiguracionesInput>
+    create: XOR<usuariosCreateWithoutConfiguracionesInput, usuariosUncheckedCreateWithoutConfiguracionesInput>
+    where?: usuariosWhereInput
+  }
+
+  export type usuariosUpdateToOneWithWhereWithoutConfiguracionesInput = {
+    where?: usuariosWhereInput
+    data: XOR<usuariosUpdateWithoutConfiguracionesInput, usuariosUncheckedUpdateWithoutConfiguracionesInput>
+  }
+
+  export type usuariosUpdateWithoutConfiguracionesInput = {
+    nombre?: NullableStringFieldUpdateOperationsInput | string | null
+    usuario?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    rol?: EnumRolFieldUpdateOperationsInput | $Enums.Rol
+    creadoen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carritos?: CarritoUpdateManyWithoutUsuariosNestedInput
+  }
+
+  export type usuariosUncheckedUpdateWithoutConfiguracionesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nombre?: NullableStringFieldUpdateOperationsInput | string | null
+    usuario?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    rol?: EnumRolFieldUpdateOperationsInput | $Enums.Rol
+    creadoen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    carritos?: CarritoUncheckedUpdateManyWithoutUsuariosNestedInput
   }
 
   export type detalleventasCreateWithoutProductosInput = {
@@ -20287,6 +20621,7 @@ export namespace Prisma {
     password: string
     rol?: $Enums.Rol
     creadoen?: Date | string | null
+    configuraciones?: configuracionCreateNestedManyWithoutUsuariosInput
   }
 
   export type usuariosUncheckedCreateWithoutCarritosInput = {
@@ -20296,6 +20631,7 @@ export namespace Prisma {
     password: string
     rol?: $Enums.Rol
     creadoen?: Date | string | null
+    configuraciones?: configuracionUncheckedCreateNestedManyWithoutUsuariosInput
   }
 
   export type usuariosCreateOrConnectWithoutCarritosInput = {
@@ -20336,6 +20672,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     rol?: EnumRolFieldUpdateOperationsInput | $Enums.Rol
     creadoen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configuraciones?: configuracionUpdateManyWithoutUsuariosNestedInput
   }
 
   export type usuariosUncheckedUpdateWithoutCarritosInput = {
@@ -20345,6 +20682,7 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     rol?: EnumRolFieldUpdateOperationsInput | $Enums.Rol
     creadoen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    configuraciones?: configuracionUncheckedUpdateManyWithoutUsuariosNestedInput
   }
 
   export type CarritoCreateWithoutItemsInput = {
@@ -20469,6 +20807,12 @@ export namespace Prisma {
     estado?: string
   }
 
+  export type configuracionCreateManyUsuariosInput = {
+    id?: number
+    clave: string
+    valor?: string | null
+  }
+
   export type CarritoUpdateWithoutUsuariosInput = {
     creadoEn?: DateTimeFieldUpdateOperationsInput | Date | string
     estado?: StringFieldUpdateOperationsInput | string
@@ -20486,6 +20830,23 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     creadoEn?: DateTimeFieldUpdateOperationsInput | Date | string
     estado?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type configuracionUpdateWithoutUsuariosInput = {
+    clave?: StringFieldUpdateOperationsInput | string
+    valor?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type configuracionUncheckedUpdateWithoutUsuariosInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    clave?: StringFieldUpdateOperationsInput | string
+    valor?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type configuracionUncheckedUpdateManyWithoutUsuariosInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    clave?: StringFieldUpdateOperationsInput | string
+    valor?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type detalleventasCreateManyProductosInput = {

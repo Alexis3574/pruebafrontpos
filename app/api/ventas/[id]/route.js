@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// GET - obtener una venta por ID
 export async function GET(request, { params }) {
   const id = parseInt(params.id);
   if (!id || isNaN(id)) {
@@ -33,7 +32,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT - actualizar una venta
 export async function PUT(request, { params }) {
   const id = parseInt(params.id);
   const body = await request.json();
@@ -59,7 +57,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE - eliminar una venta
 export async function DELETE(request, { params }) {
   const id = parseInt(params.id);
   if (!id || isNaN(id)) {

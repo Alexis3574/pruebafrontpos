@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 
-// Convierte fecha ISO a YYYY-MM-DD (local)
 function toLocalDateString(fechaISO) {
   if (!fechaISO) return '';
   const fecha = new Date(fechaISO);
@@ -31,7 +30,6 @@ export default function Form({ productoEditar, onSave }) {
     []
   );
 
-  // Rellena el formulario si hay producto a editar
   useEffect(() => {
     if (productoEditar) {
       setNombre(productoEditar.nombre ?? '');
@@ -45,7 +43,6 @@ export default function Form({ productoEditar, onSave }) {
           : ''
       );
     } else {
-      // limpiar si no hay seleccionado
       setNombre('');
       setPrecio('');
       setStock('');
@@ -74,7 +71,6 @@ export default function Form({ productoEditar, onSave }) {
       fechacaducidad: fechacaducidad ? new Date(fechacaducidad) : null,
     });
 
-    // Limpiar formulario si era alta (si estabas editando, el padre puede resetear productoEditar)
     if (!productoEditar) {
       setNombre('');
       setPrecio('');
@@ -90,7 +86,6 @@ export default function Form({ productoEditar, onSave }) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur text-slate-800"
     >
-      {/* Encabezado */}
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-900">
@@ -108,14 +103,12 @@ export default function Form({ productoEditar, onSave }) {
         )}
       </div>
 
-      {/* Error inline (visual) */}
       {error && (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Campos */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -218,13 +211,11 @@ export default function Form({ productoEditar, onSave }) {
         </div>
       </div>
 
-      {/* Acciones */}
       <div className="mt-6 flex flex-col-reverse items-center justify-end gap-3 sm:flex-row">
         {productoEditar && (
           <button
             type="button"
             onClick={() => {
-              // “limpiar” a modo alta (opcional)
               setNombre('');
               setPrecio('');
               setStock('');

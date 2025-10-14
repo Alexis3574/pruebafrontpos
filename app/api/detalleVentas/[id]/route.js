@@ -27,7 +27,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT - Actualizar un detalle de venta
 export async function PUT(request, { params }) {
   const id = parseInt(params.id);
   if (isNaN(id)) {

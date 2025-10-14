@@ -23,7 +23,6 @@ export default function Form({ onSubmit, initialData = {} }) {
     []
   );
 
-  // Helpers
   const toInt = (v) => {
     const n = Number.parseInt(v, 10);
     return Number.isFinite(n) ? n : NaN;
@@ -132,7 +131,6 @@ export default function Form({ onSubmit, initialData = {} }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
-        {/* Producto */}
         <div className="md:col-span-7">
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Producto
@@ -200,7 +198,6 @@ export default function Form({ onSubmit, initialData = {} }) {
           />
         </div>
 
-        {/* Botón */}
         <div className="md:col-span-8 flex items-end">
           <button
             type="submit"

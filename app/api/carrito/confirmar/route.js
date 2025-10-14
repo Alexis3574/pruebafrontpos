@@ -15,12 +15,10 @@ export async function POST(req) {
     return NextResponse.json({ error: "Carrito vacío" }, { status: 400 });
   }
 
-  // Confirmar carrito
   await prisma.carrito.update({
     where: { id: carrito.id },
     data: { estado: "confirmado" }
   });
 
-  // Aquí podrías registrar una venta/factura
   return NextResponse.json({ ok: true, message: "Carrito confirmado como orden de venta" });
 }
