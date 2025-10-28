@@ -31,12 +31,13 @@ model configuracion {
   id         Int      @id @default(autoincrement())
   clave      String   @db.VarChar(100)
   valor      String?
-  usuarioid  Int?   
+  usuarioid  Int      
 
-  usuarios   usuarios? @relation(fields: [usuarioid], references: [id], onDelete: Cascade)
+  usuario    usuarios  @relation(fields: [usuarioid], references: [id], onDelete: Cascade) 
 
   @@unique([clave, usuarioid], name: "clave_usuarioid")
 }
+
 
 
 

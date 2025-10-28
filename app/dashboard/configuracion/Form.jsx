@@ -236,6 +236,49 @@ export default function ConfiguracionForm() {
         </div>
       )}
 
+    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+      <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
+        Tipografía del texto
+      </label>
+      <select
+        value={valores.tipografia || 'Inter'}
+        onChange={async (e) => {
+          const nuevaTipografia = e.target.value;
+          setValores((prev) => ({ ...prev, tipografia: nuevaTipografia }));
+          await guardar('tipografia', nuevaTipografia);
+
+    
+          document.documentElement.style.setProperty(
+            '--font-base',
+            `'${nuevaTipografia}', sans-serif`
+          );
+
+          announce(`Tipografía cambiada a ${nuevaTipografia}`);
+        }}
+        className="w-full mt-1 p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+      >
+        {[
+          'Inter (Predeterminado)',
+          'Roboto',
+          'Poppins',
+          'Open Sans',
+          'Montserrat',
+          'Lato',
+          'Nunito',
+          'Raleway',
+          'Merriweather',
+          'Source Sans Pro'
+        ].map((font) => (
+          <option key={font} value={font}>
+            {font}
+          </option>
+        ))}
+      </select>
+      <p className="text-sm text-gray-500 mt-1">
+        Cambia la fuente de todo el texto de la aplicación.
+      </p>
+    </div>
+
       <div>
         <label className="block mb-2 font-semibold text-gray-700 dark:text-gray-300">
           Tamaño del texto: {valores.tamanoTexto}%

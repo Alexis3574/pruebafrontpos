@@ -3,18 +3,20 @@ import { useMemo, useState } from 'react';
 import { useDetalleVentas } from '../../hooks/useDetalleVentas';
 import { useCarrito } from '../../hooks/useCarrito';
 import { toast } from 'react-toastify';
-
 import Form from './Form';
 import List from './List';
 import CarritoModal from './CarritoModal';
-import TicketVentas from './TicketVentas'; // 👈 importamos el nuevo componente
-
+import TicketVentas from './TicketVentas';
 import { generarTicketPDF } from '../../../utils/generarTicket';
+import ModalMetodoPago from './ModalPago';
 
 export default function VentasPage() {
   const { detalles, crear, actualizar, eliminar } = useDetalleVentas();
   const { agregar } = useCarrito();
   const [editing, setEditing] = useState(null);
+  const [ventaActual, setVentaActual] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false); 
+  const [loadingPago, setLoadingPago] = useState(false); 
 
   const currency = useMemo(
     () =>
@@ -42,21 +44,19 @@ export default function VentasPage() {
       if (editing) {
         await actualizar(editing.id, data);
         setEditing(null);
-        toast?.success('✅ Venta actualizada');
+        toast.success(' Venta actualizada');
       } else {
         const nueva = await crear(data);
-        toast?.success('✅ Venta agregada');
-
+        toast.success(' Venta agregada');
         const productoId = Number(nueva?.productoid ?? data.productoid);
         const cantidad = Number(nueva?.cantidad ?? data.cantidad);
         const precio = Number(nueva?.preciounitario ?? data.preciounitario);
-
         if (!Number.isNaN(productoId) && !Number.isNaN(cantidad)) {
           await agregar(productoId, cantidad, Number.isNaN(precio) ? undefined : precio);
         }
       }
     } catch (e) {
-      toast?.error('❌ Ocurrió un error al guardar');
+      toast.error('❌ Ocurrió un error al guardar');
       console.error(e);
     }
   };
@@ -64,24 +64,76 @@ export default function VentasPage() {
   const handleDelete = async (id) => {
     try {
       await eliminar(id);
-      toast?.info('🗑️ Detalle eliminado');
+      toast.info(' Detalle eliminado');
     } catch (e) {
-      toast?.error('❌ No se pudo eliminar');
+      toast.error('❌ No se pudo eliminar');
       console.error(e);
     }
   };
 
   const pagarYGenerarPDF = () => {
     if ((detalles?.length || 0) === 0) return;
-
     generarTicketPDF({
       detalles,
       total: totalGeneral,
       negocio: { nombre: 'Gestor de Inventario' },
       folio: `V-${Date.now()}`,
     });
+    toast.success(' Ticket generado');
+  };
 
-    toast?.success('✅ Pago realizado con éxito');
+
+  const prepararVenta = async () => {
+    try {
+      const res = await fetch('/api/ventas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          total: totalGeneral,
+          metodopago: null,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error('❌ Error en /api/ventas:', await res.text());
+        return null;
+      }
+
+      const data = await res.json();
+
+      if (!data || !data.id) {
+        console.error('❌ Respuesta inválida de la API:', data);
+        return null;
+      }
+
+      setVentaActual(data);
+      return data;
+    } catch (error) {
+      console.error('❌ Error creando venta:', error);
+      toast.error('❌ No se pudo crear la venta antes del pago');
+      return null;
+    }
+  };
+
+  const abrirModalPago = async () => {
+    try {
+      setLoadingPago(true);
+      const venta = await prepararVenta();
+
+      if (!venta || !venta.id) {
+        toast.error('❌ No se pudo preparar la venta para el pago');
+        setLoadingPago(false);
+        return;
+      }
+
+      setVentaActual(venta);
+      setMostrarModal(true);
+    } catch (error) {
+      console.error('❌ Error al abrir el modal de pago:', error);
+      toast.error('Ocurrió un error al abrir el pago.');
+    } finally {
+      setLoadingPago(false);
+    }
   };
 
   return (
@@ -109,7 +161,7 @@ export default function VentasPage() {
           </span>
         </div>
 
-        <section className="rounded-2xl p-5 ">
+        <section className="rounded-2xl p-5">
           <Form
             onSubmit={handleSubmit}
             initialData={editing || {}}
@@ -129,7 +181,7 @@ export default function VentasPage() {
           )}
         </section>
 
-        <section className="mt-6 rounded-2xl ">
+        <section className="mt-6 rounded-2xl">
           <List data={detalles} onEdit={setEditing} onDelete={handleDelete} />
         </section>
 
@@ -143,17 +195,29 @@ export default function VentasPage() {
               Total a pagar:{' '}
               <strong className="text-slate-900">{currency.format(totalGeneral)}</strong>
             </span>
+
             <button
-              type="button"
-              disabled={(detalles?.length || 0) === 0}
-              className="inline-flex w-44 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={pagarYGenerarPDF}
+              onClick={abrirModalPago}
+              disabled={loadingPago || totalGeneral <= 0}
+              className={`rounded-md px-4 py-2 text-white font-medium shadow-md transition ${
+                totalGeneral <= 0
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-emerald-600 hover:bg-emerald-700'
+              }`}
             >
-              Pagar
+              {loadingPago ? 'Creando venta...' : ' Realizar Pago'}
             </button>
           </div>
         </div>
       </main>
+
+      
+      {mostrarModal && ventaActual && (
+        <ModalMetodoPago
+          venta={ventaActual}
+          onClose={() => setMostrarModal(false)}
+        />
+      )}
     </div>
   );
 }

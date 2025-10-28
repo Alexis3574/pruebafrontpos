@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
-import { CarritoProvider } from '../context/CarritoContext'; // 👈 importa el provider
+import { CarritoProvider } from '../context/CarritoContext';
 
 export default function DashboardLayout({ children }) {
   const { data: session, status } = useSession();

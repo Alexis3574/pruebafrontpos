@@ -14,7 +14,6 @@ export function useConfiguracion() {
 
   const cargado = useRef(false);
 
-  
   const obtener = async () => {
     try {
       const res = await fetch('/api/configuracion', { cache: 'no-store' });
@@ -42,13 +41,14 @@ export function useConfiguracion() {
     }
   };
 
-
   const guardar = async (clave, valor) => {
     try {
+      const valorString = typeof valor === 'string' ? valor : JSON.stringify(valor);
+
       const res = await fetch(`/api/configuracion/${clave}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ valor }),
+        body: JSON.stringify({ valor: valorString }),
       });
 
       if (!res.ok) {
@@ -60,10 +60,10 @@ export function useConfiguracion() {
         const existe = prev.find((c) => c.clave === clave);
         if (existe) {
           return prev.map((c) =>
-            c.clave === clave ? { ...c, valor: JSON.stringify(valor) } : c
+            c.clave === clave ? { ...c, valor: valorString } : c
           );
         }
-        return [...prev, { clave, valor: JSON.stringify(valor) }];
+        return [...prev, { clave, valor: valorString }];
       });
     } catch (error) {
       console.error(`❌ Error al guardar "${clave}":`, error);
@@ -80,8 +80,15 @@ export function useConfiguracion() {
 
     document.documentElement.style.fontSize = `${valores.tamanoTexto}%`;
 
-    document.documentElement.style.fontFamily = valores.tipografia;
+    document.documentElement.style.setProperty(
+      '--font-base',
+      `'${valores.tipografia}', sans-serif`
+    );
+    document.body.style.fontFamily = `'${valores.tipografia}', sans-serif`;
 
+    window.dispatchEvent(new CustomEvent('tipografiaChange', { detail: valores.tipografia }));
+
+   
     const oldStyle = document.getElementById('cursor-scale');
     if (oldStyle) oldStyle.remove();
 
@@ -97,7 +104,7 @@ export function useConfiguracion() {
           <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
             <path d="M2,2 L${size - 2},${size / 2} L${size / 3},${size - 2} Z"
               fill="${strokeColor}" stroke="white" stroke-width="1"/>
-          </svg>'
+          </svg>' 
         ) ${size / 6} ${size / 6}, auto !important;
       }
     `;
@@ -105,9 +112,7 @@ export function useConfiguracion() {
     document.head.appendChild(style);
   }, [valores]);
 
-  /**
-   * 🚀 Carga inicial
-   */
+ 
   useEffect(() => {
     obtener();
   }, []);

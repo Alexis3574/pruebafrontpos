@@ -16,24 +16,28 @@ export default function RootLayout({ children }) {
   const [modoOscuro, setModoOscuro] = useState(false);
   const [modoGrises, setModoGrises] = useState(false);
   const [modoContraste, setModoContraste] = useState(false);
-  const [tamanoTexto, setTamanoTexto] = useState(50); // 0-100%
+  const [tamanoTexto, setTamanoTexto] = useState(50);
+  const [tipografia, setTipografia] = useState('Inter'); 
 
   useEffect(() => {
     setModoOscuro(localStorage.getItem('modoOscuro') === 'true');
     setModoGrises(localStorage.getItem('modoGrises') === 'true');
     setModoContraste(localStorage.getItem('modoContraste') === 'true');
     setTamanoTexto(parseInt(localStorage.getItem('tamanoTexto') || '50'));
+    setTipografia(localStorage.getItem('tipografia') || 'Inter');
 
     window.addEventListener('modoOscuroChange', (e) => setModoOscuro(e.detail));
     window.addEventListener('modoGrisesChange', (e) => setModoGrises(e.detail));
     window.addEventListener('modoContrasteChange', (e) => setModoContraste(e.detail));
     window.addEventListener('modoTextoChange', (e) => setTamanoTexto(e.detail));
+    window.addEventListener('tipografiaChange', (e) => setTipografia(e.detail));
 
     return () => {
       window.removeEventListener('modoOscuroChange', () => {});
       window.removeEventListener('modoGrisesChange', () => {});
       window.removeEventListener('modoContrasteChange', () => {});
       window.removeEventListener('modoTextoChange', () => {});
+      window.removeEventListener('tipografiaChange', () => {});
     };
   }, []);
 
@@ -51,6 +55,16 @@ export default function RootLayout({ children }) {
     const escala = 0.8 + (tamanoTexto / 100) * 0.7;
     document.documentElement.style.setProperty('--font-scale', `${escala}rem`);
   }, [tamanoTexto]);
+ 
+  useEffect(() => {
+    if (tipografia) {
+      document.documentElement.style.setProperty(
+        '--font-base',
+        `'${tipografia}', sans-serif`
+      );
+      localStorage.setItem('tipografia', tipografia);
+    }
+  }, [tipografia]);
 
   useEffect(() => {
     const guardado = localStorage.getItem('modoOscuro');
@@ -59,7 +73,7 @@ export default function RootLayout({ children }) {
       setModoOscuro(prefiereOscuro);
     }
   }, []);
-
+ 
   return (
     <html lang="es">
       <body
