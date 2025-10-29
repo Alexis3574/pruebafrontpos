@@ -1,11 +1,10 @@
 'use client';
 
 import './globals.css';
-import { SessionProvider, useSession } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation'; 
+import { usePathname } from 'next/navigation';
 import Script from 'next/script';
-
 import { AccessibilityProvider } from './context/AccessibilityContext';
 import useScreenReaderAutoFocus from '../app/hooks/useScreenReader';
 
@@ -15,14 +14,10 @@ function ScreenReaderBoot() {
 }
 
 function ChatbotTidio() {
-  const { data: session, status } = useSession();
   const pathname = usePathname();
+  const enDashboard = pathname && pathname.startsWith('/dashboard');
 
-
-  const enDashboard =
-    pathname && pathname.startsWith('/dashboard');
-
-  if (status === 'authenticated' && enDashboard) {
+  if (enDashboard) {
     return (
       <Script
         src="//code.tidio.co/gnsiic9k412fulgjkxdmhyv5cio9boyi.js"
@@ -80,10 +75,7 @@ export default function RootLayout({ children }) {
 
   useEffect(() => {
     if (tipografia) {
-      document.documentElement.style.setProperty(
-        '--font-base',
-        `'${tipografia}', sans-serif`
-      );
+      document.documentElement.style.setProperty('--font-base', `'${tipografia}', sans-serif`);
       localStorage.setItem('tipografia', tipografia);
     }
   }, [tipografia]);
@@ -108,7 +100,6 @@ export default function RootLayout({ children }) {
             <ScreenReaderBoot />
             {children}
 
-            
             <ChatbotTidio />
           </AccessibilityProvider>
         </SessionProvider>
