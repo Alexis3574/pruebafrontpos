@@ -1,8 +1,10 @@
 'use client';
 
 import './globals.css';
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation'; 
+import Script from 'next/script';
 
 import { AccessibilityProvider } from './context/AccessibilityContext';
 import useScreenReaderAutoFocus from '../app/hooks/useScreenReader';
@@ -12,12 +14,32 @@ function ScreenReaderBoot() {
   return null;
 }
 
+function ChatbotTidio() {
+  const { data: session, status } = useSession();
+  const pathname = usePathname();
+
+
+  const enDashboard =
+    pathname && pathname.startsWith('/dashboard');
+
+  if (status === 'authenticated' && enDashboard) {
+    return (
+      <Script
+        src="//code.tidio.co/gnsiic9k412fulgjkxdmhyv5cio9boyi.js"
+        strategy="afterInteractive"
+      />
+    );
+  }
+
+  return null;
+}
+
 export default function RootLayout({ children }) {
   const [modoOscuro, setModoOscuro] = useState(false);
   const [modoGrises, setModoGrises] = useState(false);
   const [modoContraste, setModoContraste] = useState(false);
   const [tamanoTexto, setTamanoTexto] = useState(50);
-  const [tipografia, setTipografia] = useState('Inter'); 
+  const [tipografia, setTipografia] = useState('Inter');
 
   useEffect(() => {
     setModoOscuro(localStorage.getItem('modoOscuro') === 'true');
@@ -55,7 +77,7 @@ export default function RootLayout({ children }) {
     const escala = 0.8 + (tamanoTexto / 100) * 0.7;
     document.documentElement.style.setProperty('--font-scale', `${escala}rem`);
   }, [tamanoTexto]);
- 
+
   useEffect(() => {
     if (tipografia) {
       document.documentElement.style.setProperty(
@@ -73,7 +95,7 @@ export default function RootLayout({ children }) {
       setModoOscuro(prefiereOscuro);
     }
   }, []);
- 
+
   return (
     <html lang="es">
       <body
@@ -85,6 +107,9 @@ export default function RootLayout({ children }) {
           <AccessibilityProvider>
             <ScreenReaderBoot />
             {children}
+
+            
+            <ChatbotTidio />
           </AccessibilityProvider>
         </SessionProvider>
       </body>
