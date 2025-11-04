@@ -15,18 +15,36 @@ function ScreenReaderBoot() {
 
 function ChatbotTidio() {
   const pathname = usePathname();
-  const enDashboard = pathname && pathname.startsWith('/dashboard');
+  const [active, setActive] = useState(false);
 
-  if (enDashboard) {
-    return (
-      <Script
-        src="//code.tidio.co/gnsiic9k412fulgjkxdmhyv5cio9boyi.js"
-        strategy="afterInteractive"
-      />
-    );
-  }
+  useEffect(() => {
+    const isDashboard = pathname?.startsWith('/dashboard');
+    if (isDashboard && !active) {
+      setActive(true);
+    } else if (!isDashboard && active) {
+      const tidioScript = document.querySelector('script[src*="code.tidio.co"]');
+      const tidioIframe = document.querySelector('#tidio-chat');
+      if (tidioIframe) tidioIframe.remove();
+      if (tidioScript) tidioScript.remove();
 
-  return null;
+      delete window.tidioChatApi;
+      delete window.tidioScriptLoaded;
+
+      setActive(false);
+    }
+  }, [pathname]);
+
+  if (!active) return null;
+
+  return (
+    <Script
+      src="https://code.tidio.co/gnsiic9k412fulgjkxdmhyv5cio9boyi.js"
+      strategy="lazyOnload"
+      onLoad={() => {
+        console.log(' Tidio cargado correctamente');
+      }}
+    />
+  );
 }
 
 export default function RootLayout({ children }) {
@@ -43,29 +61,32 @@ export default function RootLayout({ children }) {
     setTamanoTexto(parseInt(localStorage.getItem('tamanoTexto') || '50'));
     setTipografia(localStorage.getItem('tipografia') || 'Inter');
 
-    window.addEventListener('modoOscuroChange', (e) => setModoOscuro(e.detail));
-    window.addEventListener('modoGrisesChange', (e) => setModoGrises(e.detail));
-    window.addEventListener('modoContrasteChange', (e) => setModoContraste(e.detail));
-    window.addEventListener('modoTextoChange', (e) => setTamanoTexto(e.detail));
-    window.addEventListener('tipografiaChange', (e) => setTipografia(e.detail));
+    const listeners = [
+      ['modoOscuroChange', setModoOscuro],
+      ['modoGrisesChange', setModoGrises],
+      ['modoContrasteChange', setModoContraste],
+      ['modoTextoChange', setTamanoTexto],
+      ['tipografiaChange', setTipografia],
+    ];
+
+    listeners.forEach(([evt, fn]) => {
+      window.addEventListener(evt, (e) => fn(e.detail));
+    });
 
     return () => {
-      window.removeEventListener('modoOscuroChange', () => {});
-      window.removeEventListener('modoGrisesChange', () => {});
-      window.removeEventListener('modoContrasteChange', () => {});
-      window.removeEventListener('modoTextoChange', () => {});
-      window.removeEventListener('tipografiaChange', () => {});
+      listeners.forEach(([evt, fn]) => {
+        window.removeEventListener(evt, fn);
+      });
     };
   }, []);
 
   useEffect(() => {
     if (modoOscuro) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('modoOscuro', 'true');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('modoOscuro', 'false');
     }
+    localStorage.setItem('modoOscuro', modoOscuro.toString());
   }, [modoOscuro]);
 
   useEffect(() => {
@@ -99,10 +120,10 @@ export default function RootLayout({ children }) {
           <AccessibilityProvider>
             <ScreenReaderBoot />
             {children}
-
-            <ChatbotTidio />
           </AccessibilityProvider>
         </SessionProvider>
+
+        <ChatbotTidio />
       </body>
     </html>
   );
